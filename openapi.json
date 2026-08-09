@@ -1,0 +1,895 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "title": "Gift Shop Catalog Service",
+    "description": "Read-only access to an online gift shop's product catalogue, built for a shop\nassistant that helps someone choose a present.\n\nStart with `get_categories` to learn the exact category, occasion and recipient\nvalues this catalogue uses, then use `search_products` for everything else.\n\nEvery operation returns HTTP 200 with a `status` field. `status: \"ok\"` means the\nresult is usable; anything else means nothing was returned and the response\nexplains what to do instead - read `message`, `suggestions` and `notes` and act on\nthem rather than telling the shopper there is nothing. The only error status is\n401, returned when the bearer token is missing or wrong.",
+    "version": "1.0.0"
+  },
+  "servers": [
+    {
+      "url": "https://catalog-service-566410667338.europe-west1.run.app",
+      "description": "Catalog Service"
+    }
+  ],
+  "paths": {
+    "/categories": {
+      "get": {
+        "tags": [
+          "catalog"
+        ],
+        "summary": "List every category with counts, price ranges, and the exact filter values this catalogue uses.",
+        "description": "Returns every category in the gift catalogue - how many products it holds, how many\nare in stock, its price range in euros, and its subcategories. Also returns\n`filter_vocabulary`: the exact strings accepted by the `occasion` and `recipient`\nparameters of the other tools.\n\nCall this once near the start of a gift-finding conversation, before your first\n`search_products` call. It is cheap, and it is the only reliable way to learn the\nexact category, occasion and recipient values this catalogue uses. Guessing them -\n\"homeware\", \"sister\", \"new home\" - returns nothing.\n\nDoes not return individual products. Use `search_products` for those.",
+        "operationId": "get_categories",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CategoriesResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    },
+    "/products/search": {
+      "get": {
+        "tags": [
+          "catalog"
+        ],
+        "summary": "Find gift products matching a shopper's constraints - budget, occasion, recipient, category or free text.",
+        "description": "The primary product-discovery tool. Use it as soon as the shopper has given you\n*any* constraint: a budget, an occasion, who it is for, a category, or just a\ndescription of what they want (\"something cosy for a new flat\").\n\nAll parameters are optional and combine with AND. Omit anything the shopper has not\ntold you - do not invent values to fill parameters, because every filter you add\nnarrows the result. Out-of-stock products are excluded unless you explicitly\ninclude them.\n\nReturns at most `limit` products plus `total_matches`, so you know how much you did\nnot see, and `notes` telling you how to narrow a broad result. When nothing\nmatches, `status` is `\"no_match\"` and the response carries concrete suggestions for\nrelaxing the search - act on those rather than telling the shopper there is nothing.\n\nPrefer this over `get_products_by_category` whenever the shopper has said anything\nbeyond naming a category.",
+        "operationId": "search_products",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "query",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "description": "Free text describing what the shopper wants, in their own words where possible - 'cosy blanket for a new flat', 'chef's knife'. Matched against product names, tags, subcategories and descriptions. Leave empty if they have given only structured constraints such as a budget.",
+              "nullable": true
+            },
+            "description": "Free text describing what the shopper wants, in their own words where possible - 'cosy blanket for a new flat', 'chef's knife'. Matched against product names, tags, subcategories and descriptions. Leave empty if they have given only structured constraints such as a budget."
+          },
+          {
+            "name": "category",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "description": "Category display name ('Home & Living') or slug ('home-living'). Minor misspellings are tolerated. Use a value from get_categories.",
+              "nullable": true
+            },
+            "description": "Category display name ('Home & Living') or slug ('home-living'). Minor misspellings are tolerated. Use a value from get_categories."
+          },
+          {
+            "name": "occasion",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "description": "One of the values in filter_vocabulary.occasions from get_categories. Any other value matches nothing.",
+              "nullable": true
+            },
+            "description": "One of the values in filter_vocabulary.occasions from get_categories. Any other value matches nothing."
+          },
+          {
+            "name": "recipient",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "description": "One of the values in filter_vocabulary.recipients from get_categories. Use 'anyone' only if the shopper genuinely has nobody specific in mind - most products are tagged 'anyone', so it rarely narrows anything usefully.",
+              "nullable": true
+            },
+            "description": "One of the values in filter_vocabulary.recipients from get_categories. Use 'anyone' only if the shopper genuinely has nobody specific in mind - most products are tagged 'anyone', so it rarely narrows anything usefully."
+          },
+          {
+            "name": "max_price_eur",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "number",
+              "minimum": 0,
+              "description": "Upper bound in euros, inclusive. Treat a hard limit as hard: 'under 70', 'max 70', 'no more than 70' means pass exactly 70 and never recommend above it. Only vague phrasing - 'around 50', 'about 50', 'or so' - earns headroom, and then pass about 20% more. If the only good option is over a hard limit, say the price plainly and let the shopper decide; do not quietly widen the budget on their behalf.",
+              "nullable": true
+            },
+            "description": "Upper bound in euros, inclusive. Treat a hard limit as hard: 'under 70', 'max 70', 'no more than 70' means pass exactly 70 and never recommend above it. Only vague phrasing - 'around 50', 'about 50', 'or so' - earns headroom, and then pass about 20% more. If the only good option is over a hard limit, say the price plainly and let the shopper decide; do not quietly widen the budget on their behalf."
+          },
+          {
+            "name": "min_price_eur",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "number",
+              "minimum": 0,
+              "description": "Lower bound in euros, inclusive. Use only when the shopper wants something that feels substantial; otherwise omit it.",
+              "nullable": true
+            },
+            "description": "Lower bound in euros, inclusive. Use only when the shopper wants something that feels substantial; otherwise omit it."
+          },
+          {
+            "name": "include_out_of_stock",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "boolean",
+              "description": "Leave false. Recommending something unavailable wastes the shopper's time. Set true only when they ask specifically about an item you already know is out of stock.",
+              "default": false
+            },
+            "description": "Leave false. Recommending something unavailable wastes the shopper's time. Set true only when they ask specifically about an item you already know is out of stock."
+          },
+          {
+            "name": "sort",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "enum": [
+                "relevance",
+                "price_asc",
+                "price_desc",
+                "rating"
+              ],
+              "type": "string",
+              "description": "Keep 'relevance' unless the shopper asks for the cheapest, the most expensive, or the best reviewed.",
+              "default": "relevance"
+            },
+            "description": "Keep 'relevance' unless the shopper asks for the cheapest, the most expensive, or the best reviewed."
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 12,
+              "minimum": 1,
+              "description": "How many products to return. Ask for 5 even though you will show two or three: the extra give you room to pick the best fit and to hold a backup ready for when the shopper rejects one.",
+              "default": 5
+            },
+            "description": "How many products to return. Ask for 5 even though you will show two or three: the extra give you room to pick the best fit and to hold a backup ready for when the shopper rejects one."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProductListResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/products/by-category": {
+      "get": {
+        "tags": [
+          "catalog"
+        ],
+        "summary": "List the products in one category, most popular first, with pagination.",
+        "description": "For browsing - when the shopper has named a category and given you nothing else\n(\"what have you got in Kitchen & Dining?\"). If they have mentioned a budget, an\noccasion, a recipient, or anything about what they want, use `search_products`\ninstead: it filters and ranks, this does not.\n\n`category` accepts the display name or the slug and tolerates minor misspellings.\nIf it does not exist, `status` is `\"unknown_category\"` and the response lists the\nreal ones - use those rather than guessing again.\n\nReturns 8 products per page. `total_matches` and `has_more` tell you whether more\nexist, but prefer narrowing with `search_products` over paging through a long list:\nthe shopper wants two good options, not forty.",
+        "operationId": "get_products_by_category",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "category",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "description": "Category display name ('Home & Living') or slug ('home-living'), from get_categories. Minor misspellings are tolerated."
+            },
+            "description": "Category display name ('Home & Living') or slug ('home-living'), from get_categories. Minor misspellings are tolerated."
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 20,
+              "minimum": 1,
+              "description": "Products per page.",
+              "default": 8
+            },
+            "description": "Products per page."
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 0,
+              "description": "How many products to skip. Use only if the shopper explicitly asks to see more of the same category.",
+              "default": 0
+            },
+            "description": "How many products to skip. Use only if the shopper explicitly asks to see more of the same category."
+          },
+          {
+            "name": "sort",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "enum": [
+                "popularity",
+                "price_asc",
+                "price_desc",
+                "rating"
+              ],
+              "type": "string",
+              "description": "Default 'popularity' - best-rated and most-reviewed first.",
+              "default": "popularity"
+            },
+            "description": "Default 'popularity' - best-rated and most-reviewed first."
+          },
+          {
+            "name": "max_price_eur",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "number",
+              "minimum": 0,
+              "description": "Upper bound in euros, inclusive.",
+              "nullable": true
+            },
+            "description": "Upper bound in euros, inclusive."
+          },
+          {
+            "name": "include_out_of_stock",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "boolean",
+              "description": "Leave false unless the shopper asks about an unavailable item.",
+              "default": false
+            },
+            "description": "Leave false unless the shopper asks about an unavailable item."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProductListResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/products/{product_id}": {
+      "get": {
+        "tags": [
+          "catalog"
+        ],
+        "summary": "Get the full record for one product, including material, colour, brand and exact stock.",
+        "description": "Returns everything in the summary plus brand, colour, material, the occasions it\nsuits, who it is for, its tags, and the exact stock count.\n\nCall it when the shopper asks about a specific product you have already\nrecommended, or when you need a detail you do not have - material, colour, brand -\nto answer a question or justify a recommendation. Do not call it for every search\nresult: the fields returned by `search_products` are enough to recommend from.\n\nIf the product is out of stock, the response also carries up to two in-stock\n`alternatives`, so you can offer a replacement in the same reply instead of going\nback to the shopper empty-handed.",
+        "operationId": "get_product_details",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "product_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "description": "Product identifier as returned by the other tools, e.g. 'HL-003'. Case-insensitive. If you have a product name rather than an id, call search_products first."
+            },
+            "description": "Product identifier as returned by the other tools, e.g. 'HL-003'. Case-insensitive. If you have a product name rather than an id, call search_products first."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProductDetailResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/products/{product_id}/similar": {
+      "get": {
+        "tags": [
+          "catalog"
+        ],
+        "summary": "Find in-stock products similar to a given one - same kind of thing, comparable style, close in price.",
+        "description": "Two situations call for this. First, the shopper likes something they cannot\nafford: pass `max_price_eur` set to their budget and you get the closest thing in\nrange. Second, what they want is out of stock: call it without a price limit to\noffer a replacement.\n\nReturns up to `limit` products, never including the original. If nothing similar\nexists inside the constraints, `status` is `\"no_match\"` and the response explains\nwhy - tell the shopper honestly rather than quietly widening the search.",
+        "operationId": "find_similar_products",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "product_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "description": "Identifier of the product to find alternatives to, e.g. 'TG-022'."
+            },
+            "description": "Identifier of the product to find alternatives to, e.g. 'TG-022'."
+          },
+          {
+            "name": "max_price_eur",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "number",
+              "minimum": 0,
+              "description": "Set this to the shopper's budget when the original was too expensive. Omit it when you are replacing something that is out of stock.",
+              "nullable": true
+            },
+            "description": "Set this to the shopper's budget when the original was too expensive. Omit it when you are replacing something that is out of stock."
+          },
+          {
+            "name": "include_out_of_stock",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "boolean",
+              "description": "Leave false - the point of this tool is to find something buyable.",
+              "default": false
+            },
+            "description": "Leave false - the point of this tool is to find something buyable."
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 6,
+              "minimum": 1,
+              "description": "How many alternatives to return.",
+              "default": 3
+            },
+            "description": "How many alternatives to return."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProductListResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "CategoriesResponse": {
+        "properties": {
+          "status": {
+            "type": "string",
+            "enum": [
+              "ok",
+              "no_match",
+              "unknown_category",
+              "not_found",
+              "invalid_parameter"
+            ],
+            "description": "Always 'ok' for this operation."
+          },
+          "categories": {
+            "items": {
+              "$ref": "#/components/schemas/CategoryInfo"
+            },
+            "type": "array"
+          },
+          "filter_vocabulary": {
+            "$ref": "#/components/schemas/FilterVocabulary"
+          },
+          "notes": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "description": "Guidance for your next call. Read it before searching.",
+            "nullable": true
+          }
+        },
+        "type": "object",
+        "required": [
+          "status",
+          "categories",
+          "filter_vocabulary"
+        ]
+      },
+      "CategoryInfo": {
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "Display name. Pass this exact string as the `category` parameter."
+          },
+          "slug": {
+            "type": "string",
+            "description": "URL-safe form, e.g. 'home-living'. Also accepted as `category`."
+          },
+          "product_count": {
+            "type": "integer",
+            "description": "Products in this category."
+          },
+          "in_stock_count": {
+            "type": "integer",
+            "description": "How many of those can be bought right now."
+          },
+          "price_range_eur": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/PriceRange"
+              }
+            ],
+            "description": "Use this to tell a shopper immediately whether their budget fits."
+          },
+          "subcategories": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "description": "Narrower groupings inside this category."
+          }
+        },
+        "type": "object",
+        "required": [
+          "name",
+          "slug",
+          "product_count",
+          "in_stock_count",
+          "price_range_eur"
+        ]
+      },
+      "FilterVocabulary": {
+        "properties": {
+          "occasions": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "description": "Accepted values for the `occasion` parameter. Anything else matches nothing."
+          },
+          "recipients": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "description": "Accepted values for the `recipient` parameter. Anything else matches nothing."
+          }
+        },
+        "type": "object",
+        "required": [
+          "occasions",
+          "recipients"
+        ],
+        "description": "The only values the corresponding filters accept. Derived from the catalogue."
+      },
+      "PriceRange": {
+        "properties": {
+          "min": {
+            "type": "number",
+            "description": "Cheapest product in this category, in euros."
+          },
+          "max": {
+            "type": "number",
+            "description": "Most expensive product in this category, in euros."
+          }
+        },
+        "type": "object",
+        "required": [
+          "min",
+          "max"
+        ]
+      },
+      "ProductDetail": {
+        "properties": {
+          "product_id": {
+            "type": "string",
+            "description": "Stable identifier, e.g. 'HL-003'. Pass this to get_product_details or find_similar_products."
+          },
+          "name": {
+            "type": "string",
+            "description": "Product name as it should be shown to the shopper."
+          },
+          "price_eur": {
+            "type": "number",
+            "description": "Price in euros."
+          },
+          "category": {
+            "type": "string",
+            "description": "Category this product belongs to."
+          },
+          "subcategory": {
+            "type": "string",
+            "description": "Narrower grouping within the category, e.g. 'Candles'.",
+            "nullable": true
+          },
+          "pitch": {
+            "type": "string",
+            "description": "One-line description of the product, at most 140 characters. Use it as the basis for why you are recommending this, in your own words.",
+            "nullable": true
+          },
+          "stock_level": {
+            "type": "string",
+            "enum": [
+              "in_stock",
+              "low",
+              "out_of_stock",
+              "unknown"
+            ],
+            "description": "'in_stock' or 'low' can be recommended; 'low' means few remain. 'out_of_stock' cannot be bought right now. 'unknown' means the catalogue export did not say - do not claim it is either available or sold out."
+          },
+          "shipping_days": {
+            "type": "integer",
+            "description": "Working days to delivery. 0 means digital and delivered immediately.",
+            "nullable": true
+          },
+          "gift_wrap": {
+            "type": "boolean",
+            "description": "Whether gift wrapping is offered for this product.",
+            "nullable": true
+          },
+          "rating": {
+            "type": "number",
+            "description": "Average customer rating out of 5. Absent when the product has not been rated - absent is not the same as zero.",
+            "nullable": true
+          },
+          "reviews_count": {
+            "type": "integer",
+            "description": "How many reviews the rating is based on. A high rating from many reviews is worth mentioning; from three reviews it is not.",
+            "nullable": true
+          },
+          "brand": {
+            "type": "string",
+            "description": "Brand name.",
+            "nullable": true
+          },
+          "color": {
+            "type": "string",
+            "description": "Primary colour.",
+            "nullable": true
+          },
+          "material": {
+            "type": "string",
+            "description": "What it is made of.",
+            "nullable": true
+          },
+          "occasions": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "description": "Occasions this product suits.",
+            "nullable": true
+          },
+          "recipient": {
+            "type": "string",
+            "description": "Who the catalogue tags this for. 'anyone' means no particular recipient, not that it suits everyone equally.",
+            "nullable": true
+          },
+          "tags": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "description": "Descriptive keywords, useful for explaining the fit.",
+            "nullable": true
+          },
+          "stock": {
+            "type": "integer",
+            "description": "Exact units in stock. Absent when the export did not say.",
+            "nullable": true
+          },
+          "description": {
+            "type": "string",
+            "description": "Full product description, longer than the pitch.",
+            "nullable": true
+          },
+          "also_in_categories": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "description": "Other categories this same product is listed under. Present only for cross-listed products; it is one product, not several.",
+            "nullable": true
+          }
+        },
+        "type": "object",
+        "required": [
+          "product_id",
+          "name",
+          "price_eur",
+          "category",
+          "stock_level"
+        ],
+        "description": "Everything known about one product."
+      },
+      "ProductDetailResponse": {
+        "properties": {
+          "status": {
+            "type": "string",
+            "enum": [
+              "ok",
+              "no_match",
+              "unknown_category",
+              "not_found",
+              "invalid_parameter"
+            ],
+            "description": "'ok' means `product` is present. 'not_found' means the id does not exist."
+          },
+          "message": {
+            "type": "string",
+            "description": "Explanation when status is not 'ok'.",
+            "nullable": true
+          },
+          "product": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ProductDetail"
+              }
+            ],
+            "nullable": true
+          },
+          "alternatives": {
+            "type": "array",
+            "items": {
+              "type": "object"
+            },
+            "description": "In-stock products similar to this one. Returned automatically when the requested product is out of stock, so you can offer a replacement in the same reply.",
+            "nullable": true
+          },
+          "did_you_mean": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "description": "Product ids with similar names, when the id was not found.",
+            "nullable": true
+          },
+          "notes": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "nullable": true
+          }
+        },
+        "type": "object",
+        "required": [
+          "status"
+        ]
+      },
+      "ProductListResponse": {
+        "properties": {
+          "status": {
+            "type": "string",
+            "enum": [
+              "ok",
+              "no_match",
+              "unknown_category",
+              "not_found",
+              "invalid_parameter"
+            ],
+            "description": "'ok' means `products` is usable. Any other value means nothing was returned and the rest of this response explains what to do instead."
+          },
+          "message": {
+            "type": "string",
+            "description": "Plain-language explanation, written to be relayed to the shopper. Present whenever status is not 'ok'.",
+            "nullable": true
+          },
+          "reason": {
+            "type": "string",
+            "description": "Machine-readable cause when status is 'no_match': 'budget_too_low', 'out_of_stock_only', 'no_query_match' or 'over_constrained'.",
+            "nullable": true
+          },
+          "total_matches": {
+            "type": "integer",
+            "description": "How many products matched in total, which may exceed the number returned. Use it to judge whether to narrow the search rather than paginate."
+          },
+          "returned": {
+            "type": "integer",
+            "description": "How many products are in `products`."
+          },
+          "filters_applied": {
+            "type": "object",
+            "description": "The filters actually used, including defaults and any corrected category spelling. Check it before telling the shopper what you searched for."
+          },
+          "products": {
+            "items": {
+              "$ref": "#/components/schemas/ProductSummary"
+            },
+            "type": "array",
+            "description": "Products you can recommend right now. Out-of-stock products never appear here unless you asked for them."
+          },
+          "has_more": {
+            "type": "boolean",
+            "description": "Whether more results exist beyond this page.",
+            "nullable": true
+          },
+          "did_you_mean": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "description": "Closest valid values when a parameter did not match anything. Retry with one of these rather than guessing again.",
+            "nullable": true
+          },
+          "available_categories": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "description": "Every valid category, returned when an unknown one was requested.",
+            "nullable": true
+          },
+          "suggestions": {
+            "type": "object",
+            "description": "What to try instead when nothing matched.",
+            "nullable": true
+          },
+          "notes": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "description": "Short instructions about this result: how much you did not see, what was hidden, how to narrow. Read them before replying.",
+            "nullable": true
+          }
+        },
+        "type": "object",
+        "required": [
+          "status",
+          "total_matches",
+          "returned"
+        ],
+        "description": "The shape returned by every operation that can produce more than one product."
+      },
+      "ProductSummary": {
+        "properties": {
+          "product_id": {
+            "type": "string",
+            "description": "Stable identifier, e.g. 'HL-003'. Pass this to get_product_details or find_similar_products."
+          },
+          "name": {
+            "type": "string",
+            "description": "Product name as it should be shown to the shopper."
+          },
+          "price_eur": {
+            "type": "number",
+            "description": "Price in euros."
+          },
+          "category": {
+            "type": "string",
+            "description": "Category this product belongs to."
+          },
+          "subcategory": {
+            "type": "string",
+            "description": "Narrower grouping within the category, e.g. 'Candles'.",
+            "nullable": true
+          },
+          "pitch": {
+            "type": "string",
+            "description": "One-line description of the product, at most 140 characters. Use it as the basis for why you are recommending this, in your own words.",
+            "nullable": true
+          },
+          "stock_level": {
+            "type": "string",
+            "enum": [
+              "in_stock",
+              "low",
+              "out_of_stock",
+              "unknown"
+            ],
+            "description": "'in_stock' or 'low' can be recommended; 'low' means few remain. 'out_of_stock' cannot be bought right now. 'unknown' means the catalogue export did not say - do not claim it is either available or sold out."
+          },
+          "shipping_days": {
+            "type": "integer",
+            "description": "Working days to delivery. 0 means digital and delivered immediately.",
+            "nullable": true
+          },
+          "gift_wrap": {
+            "type": "boolean",
+            "description": "Whether gift wrapping is offered for this product.",
+            "nullable": true
+          },
+          "rating": {
+            "type": "number",
+            "description": "Average customer rating out of 5. Absent when the product has not been rated - absent is not the same as zero.",
+            "nullable": true
+          },
+          "reviews_count": {
+            "type": "integer",
+            "description": "How many reviews the rating is based on. A high rating from many reviews is worth mentioning; from three reviews it is not.",
+            "nullable": true
+          }
+        },
+        "type": "object",
+        "required": [
+          "product_id",
+          "name",
+          "price_eur",
+          "category",
+          "stock_level"
+        ],
+        "description": "A product as it appears in a list of results - enough to recommend from."
+      },
+      "Suggestions": {
+        "properties": {
+          "cheapest_in_scope": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ProductSummary"
+              }
+            ],
+            "nullable": true,
+            "description": "The cheapest product matching every filter except the budget. Present when the budget was the reason nothing matched - offer it, or use its price to tell the shopper what the realistic minimum is."
+          },
+          "out_of_stock_matches": {
+            "items": {
+              "$ref": "#/components/schemas/ProductSummary"
+            },
+            "type": "array",
+            "description": "Products that matched but cannot be bought right now. Present when stock was the only reason nothing came back. Mention them and offer alternatives via find_similar_products rather than pretending they do not exist.",
+            "nullable": true
+          },
+          "relax": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "description": "Concrete changes that would produce results, e.g. 'raise max_price_eur to 54'. Act on one of these rather than reporting failure.",
+            "nullable": true
+          }
+        },
+        "type": "object",
+        "description": "What to do instead, when a search comes back empty."
+      }
+    },
+    "securitySchemes": {
+      "bearerAuth": {
+        "type": "http",
+        "description": "Send the API token as `Authorization: Bearer <token>`.",
+        "scheme": "bearer"
+      }
+    }
+  }
+}

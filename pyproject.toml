@@ -1,0 +1,27 @@
+[project]
+name = "catalog-service"
+version = "1.0.0"
+description = "Gift shop catalogue exposed as tools an LLM agent can call"
+requires-python = ">=3.12"
+dependencies = [
+    "fastapi>=0.115.6",
+    "uvicorn[standard]>=0.34.0",
+    "pydantic>=2.10.4",
+    "fastmcp>=2.3.4",
+]
+
+[dependency-groups]
+dev = [
+    "pytest>=8.3.4",
+    "httpx>=0.28.1",
+    # The spec is the deliverable, so it gets validated like one rather than eyeballed.
+    "openapi-spec-validator>=0.7.1",
+]
+
+# The service is run, not installed - there is no library to build.
+[tool.uv]
+package = false
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-q"
