@@ -1,0 +1,341 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Focolare — regalos con calma</title>
+<meta name="description" content="Focolare, tienda de regalos online. 152 productos en 11 categorías, de 6,50€ a 899€.">
+<style>
+  :root{
+    --bg: #FBF4EC;
+    --surface: #FFFFFF;
+    --card-border: #EADFCE;
+    --text: #2B211B;
+    --text-muted: #6B5D51;
+    --primary: #BC4B2C;
+    --primary-dark: #9C3C21;
+    --chip-bg: #F2E4D0;
+    --chip-text: #7A5B33;
+  }
+  *{ box-sizing: border-box; }
+  body{
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: -apple-system, "Segoe UI", system-ui, sans-serif;
+    line-height: 1.5;
+  }
+  h1, h2, .brand{
+    font-family: Georgia, "Iowan Old Style", ui-serif, serif;
+    font-weight: 600;
+  }
+  a{ color: inherit; }
+  .wrap{
+    max-width: 1080px;
+    margin: 0 auto;
+    padding: 0 24px;
+  }
+
+  /* header */
+  header{
+    padding: 20px 0;
+    border-bottom: 1px solid var(--card-border);
+  }
+  header .wrap{
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .brand{
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 1.3rem;
+    text-decoration: none;
+    color: var(--text);
+  }
+  .brand svg{ flex: none; }
+  nav{ display: flex; gap: 28px; font-size: 0.95rem; }
+  nav a{ text-decoration: none; color: var(--text-muted); }
+  nav a:hover{ color: var(--text); }
+
+  /* hero */
+  .hero{
+    padding: 72px 0 56px;
+    text-align: center;
+  }
+  .hero h1{
+    font-size: clamp(2rem, 4vw, 2.75rem);
+    margin: 0 0 18px;
+    line-height: 1.15;
+  }
+  .hero p{
+    max-width: 560px;
+    margin: 0 auto 32px;
+    color: var(--text-muted);
+    font-size: 1.05rem;
+  }
+  .cta{
+    display: inline-block;
+    background: var(--primary);
+    color: #fff;
+    text-decoration: none;
+    padding: 14px 30px;
+    border-radius: 999px;
+    font-size: 1rem;
+    font-weight: 600;
+    border: none;
+    cursor: pointer;
+    transition: background 0.15s ease;
+  }
+  .cta:hover{ background: var(--primary-dark); }
+
+  /* facts strip */
+  .facts{
+    display: flex;
+    justify-content: center;
+    gap: 48px;
+    flex-wrap: wrap;
+    padding: 8px 0 64px;
+    text-align: center;
+  }
+  .facts div strong{
+    display: block;
+    font-size: 1.5rem;
+    font-family: Georgia, ui-serif, serif;
+  }
+  .facts div span{
+    color: var(--text-muted);
+    font-size: 0.85rem;
+  }
+
+  /* products */
+  .section-title{
+    text-align: center;
+    margin: 0 0 8px;
+    font-size: 1.6rem;
+  }
+  .section-sub{
+    text-align: center;
+    color: var(--text-muted);
+    margin: 0 0 40px;
+  }
+  .grid{
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 20px;
+    padding-bottom: 72px;
+  }
+  .card{
+    background: var(--surface);
+    border: 1px solid var(--card-border);
+    border-radius: 14px;
+    padding: 22px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+  .card .chip{
+    align-self: flex-start;
+    background: var(--chip-bg);
+    color: var(--chip-text);
+    font-size: 0.72rem;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+    text-transform: uppercase;
+    padding: 3px 10px;
+    border-radius: 999px;
+  }
+  .card h3{
+    margin: 4px 0 0;
+    font-size: 1.05rem;
+  }
+  .card .price{
+    font-weight: 700;
+    color: var(--primary-dark);
+  }
+  .card p{
+    margin: 0;
+    color: var(--text-muted);
+    font-size: 0.9rem;
+    flex-grow: 1;
+  }
+  .card .rating{
+    font-size: 0.82rem;
+    color: var(--text-muted);
+  }
+
+  /* value strip */
+  .values{
+    border-top: 1px solid var(--card-border);
+    padding: 48px 0;
+    display: flex;
+    justify-content: center;
+    gap: 56px;
+    flex-wrap: wrap;
+    text-align: center;
+  }
+  .values div{ max-width: 220px; }
+  .values div .icon{ font-size: 1.4rem; }
+  .values div p{ color: var(--text-muted); font-size: 0.88rem; margin: 6px 0 0; }
+
+  footer{
+    border-top: 1px solid var(--card-border);
+    padding: 28px 0;
+    text-align: center;
+    color: var(--text-muted);
+    font-size: 0.82rem;
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="wrap">
+    <a class="brand" href="#top">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M12 2C9 7 6 9.5 6 14a6 6 0 0 0 12 0c0-2-1-3.5-2-5 .3 2-.5 3-1.5 3.2C15.8 10.5 14 8 12 2Z" fill="#BC4B2C"/>
+      </svg>
+      Focolare
+    </a>
+    <nav>
+      <a href="#productos">Productos</a>
+      <a href="#valores">Cómo funciona</a>
+    </nav>
+  </div>
+</header>
+
+<main id="top">
+  <section class="hero">
+    <div class="wrap">
+      <h1>Regalos que sí dicen algo</h1>
+      <p>
+        152 productos en 11 categorías — de la cocina al escritorio, de lo íntimo a lo
+        ruidoso. Si no sabes por dónde empezar, cuéntaselo a nuestro asistente y te
+        propone dos opciones, no cuarenta.
+      </p>
+      <button class="cta" id="find-gift-btn" type="button">Encuentra un regalo</button>
+    </div>
+  </section>
+
+  <div class="wrap">
+    <div class="facts">
+      <div><strong>152</strong><span>productos</span></div>
+      <div><strong>11</strong><span>categorías</span></div>
+      <div><strong>6,50€–899€</strong><span>rango de precio</span></div>
+      <div><strong>2–5 días</strong><span>de envío</span></div>
+    </div>
+  </div>
+
+  <section class="wrap" id="productos">
+    <h2 class="section-title">Algunos favoritos</h2>
+    <p class="section-sub">Una muestra real del catálogo, no una maqueta.</p>
+    <div class="grid">
+
+      <article class="card">
+        <span class="chip">Home &amp; Living</span>
+        <h3>Alpaca Throw</h3>
+        <span class="price">185€</span>
+        <p>Genuinamente suave, genuinamente cálida, y ligera de verdad para usarla a diario.</p>
+        <span class="rating">★ 4.9</span>
+      </article>
+
+      <article class="card">
+        <span class="chip">Kitchen &amp; Dining</span>
+        <h3>Chef's Knife 20cm</h3>
+        <span class="price">149€</span>
+        <p>Un gyuto japonés de verdad. Mantiene el filo, bien equilibrado, para durar años.</p>
+        <span class="rating">★ 4.8</span>
+      </article>
+
+      <article class="card">
+        <span class="chip">Beauty &amp; Wellness</span>
+        <h3>Silk Pillowcase Pair</h3>
+        <span class="price">119€</span>
+        <p>Dos fundas, lavables a máquina en frío. Más suave con el pelo que el algodón.</p>
+        <span class="rating">★ 4.7</span>
+      </article>
+
+      <article class="card">
+        <span class="chip">Books &amp; Stationery</span>
+        <h3>Atlas of Remote Islands</h3>
+        <span class="price">36€</span>
+        <p>Cincuenta islas que el autor nunca visitó, un mapa y una historia para cada una.</p>
+        <span class="rating">★ 4.8</span>
+      </article>
+
+      <article class="card">
+        <span class="chip">Games &amp; Puzzles</span>
+        <h3>Wooden Puzzle 500pc, Coastline</h3>
+        <span class="price">78€</span>
+        <p>Abedul cortado a láser con piezas con forma de barcos y pájaros. Un capricho de verdad.</p>
+        <span class="rating">★ 4.8</span>
+      </article>
+
+      <article class="card">
+        <span class="chip">Outdoor &amp; Travel</span>
+        <h3>Weekender Bag</h3>
+        <span class="price">189€</span>
+        <p>Caben dos días de ropa, zapatos incluidos. Lona encerada, así que la lluvia resbala.</p>
+        <span class="rating">★ 4.7</span>
+      </article>
+
+    </div>
+  </section>
+
+  <section class="values" id="valores">
+    <div>
+      <div class="icon">🎁</div>
+      <p>La mayoría de productos se envuelven para regalo sin coste añadido.</p>
+    </div>
+    <div>
+      <div class="icon">🚚</div>
+      <p>Envíos en 2–5 días laborables, según el producto.</p>
+    </div>
+    <div>
+      <div class="icon">💬</div>
+      <p>¿No sabes qué elegir? El asistente pregunta lo justo y va al grano.</p>
+    </div>
+  </section>
+</main>
+
+<footer>
+  Focolare — catálogo de demostración para la evaluación técnica de indigo.ai.
+</footer>
+
+<!--
+  Widget de chat (indigo.ai)
+  ==========================
+  Pega aquí el script "Live" de indigo.ai -> Agent settings -> Settings & Installation.
+  Es un script atado a tu workspace/agent, así que no se puede reconstruir desde fuera:
+  cópialo tal cual desde el dashboard.
+
+  Deja el widget CERRADO al cargar (solo visible el lanzador) - es el comportamiento por
+  defecto si no llamas a ningún método de apertura automática, así que probablemente no
+  hace falta tocar nada para conseguirlo.
+
+  Personalización (color, icono del lanzador, estado inicial): revisa la guía
+  "Advanced Web Chat Customization and Installation Guide" en guide.indigo.ai para los
+  nombres exactos de los parámetros - no están confirmados aquí porque son específicos
+  de esa página, que no pudo inspeccionarse desde fuera del dashboard. Ajusta --primary
+  (#BC4B2C) arriba para que el color del lanzador case con el de este sitio.
+
+  <script id="indigo-live-script" ...></script>
+-->
+
+<script>
+  // El botón de héroe abre el widget si su API está disponible; si no, baja a la
+  // muestra de productos. Ajusta el nombre del método/objeto global una vez pegado
+  // el script Live (suele exponerse como algo tipo `window.Indigo.open()` o similar -
+  // confírmalo en la guía de instalación, el nombre exacto no está verificado aquí).
+  document.getElementById('find-gift-btn').addEventListener('click', function () {
+    if (window.Indigo && typeof window.Indigo.open === 'function') {
+      window.Indigo.open();
+    } else {
+      document.getElementById('productos').scrollIntoView({ behavior: 'smooth' });
+    }
+  });
+</script>
+
+</body>
+</html>

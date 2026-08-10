@@ -12,3 +12,9 @@ venv/
 # Force-add with `git add -f` if you ever decide to ship them.
 PLAN.md
 INDIGO.md
+
+# Working notes - kept out of the deliverable, but next to the code so a
+# fresh session finds them immediately.
+STUDY-GUIDE.md
+CODE-WALKTHROUGH.md
+HANDOFF.md
