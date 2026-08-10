@@ -296,9 +296,20 @@ cold starts are 1–2 seconds.
 ```bash
 gcloud run deploy catalog-service --source . --region europe-west1 \
   --allow-unauthenticated \
-  --set-env-vars CATALOG_API_TOKEN="$(cat .token)" \
+  --update-env-vars CATALOG_API_TOKEN="$(cat .token)",\
+PUBLIC_BASE_URL="https://catalog-service-566410667338.europe-west1.run.app" \
   --memory 512Mi --cpu 1 --max-instances 3
 ```
+
+**`--update-env-vars`, never `--set-env-vars`.** `--set-env-vars` *replaces* the whole
+environment rather than merging into it, so deploying with only the token silently drops
+`PUBLIC_BASE_URL`. That variable defaults to `http://localhost:8080` (`app/config.py`), and
+nothing fails loudly when it is wrong — the service starts, every endpoint returns 200, and
+`image_url` / `product_url` come back pointing at localhost. In the widget that surfaces as
+a broken image rendering its `alt` text next to the link, so the product name appears twice,
+plus a Chrome "wants to access other apps and services on this device" prompt, which is the
+Local Network Access warning fired by a public page requesting `localhost`. Cost an hour on
+10 Aug 2026. If those two symptoms ever reappear, check this variable first.
 
 `--allow-unauthenticated` is required: it governs Google's IAM layer, which would
 otherwise return 403 before this service ever runs. The bearer token is the actual
