@@ -37,7 +37,7 @@ main{padding:40px 0 64px}
 dl{display:grid;grid-template-columns:auto 1fr;gap:6px 16px;margin:24px 0;font-size:0.92rem}
 dt{color:var(--text-muted)}
 dd{margin:0}
-.hero-img{width:160px;height:160px;border-radius:14px;display:block;margin:0 0 20px}
+.hero-img{width:100%;max-width:420px;aspect-ratio:3/1;border-radius:14px;display:block;margin:0 0 20px}
 .alts{margin-top:32px}
 .alts a{display:block;padding:10px 0;border-top:1px solid var(--card-border)}
 footer{border-top:1px solid var(--card-border);padding:24px 0;text-align:center;

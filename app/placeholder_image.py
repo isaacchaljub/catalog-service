@@ -41,11 +41,15 @@ def render(name: str, category: str | None) -> str:
     initial = escape((name.strip()[:1] or "?").upper())
     label = escape(category or "Focolare")
 
-    return f"""<svg xmlns="http://www.w3.org/2000/svg" width="480" height="480" \
-viewBox="0 0 480 480" role="img" aria-label="{escape(name)}">
-<rect width="480" height="480" fill="{color}"/>
-<text x="240" y="280" font-family="Georgia, 'Iowan Old Style', serif" font-size="180"
-      fill="{_CREAM}" text-anchor="middle" opacity="0.92">{initial}</text>
-<text x="240" y="440" font-family="-apple-system, Helvetica, sans-serif" font-size="22"
-      fill="{_CREAM}" text-anchor="middle" opacity="0.75">{label}</text>
+    # Markdown image syntax carries no size attribute, so the SVG's own aspect ratio
+    # is the only lever over display size in a chat reply - a 1:1 square scales to
+    # the full chat-column width and dominates the screen. A short, wide banner scales
+    # to a much shorter height at the same width.
+    return f"""<svg xmlns="http://www.w3.org/2000/svg" width="600" height="200" \
+viewBox="0 0 600 200" role="img" aria-label="{escape(name)}">
+<rect width="600" height="200" rx="16" fill="{color}"/>
+<text x="50" y="138" font-family="Georgia, 'Iowan Old Style', serif" font-size="100"
+      fill="{_CREAM}" opacity="0.92">{initial}</text>
+<text x="550" y="175" font-family="-apple-system, Helvetica, sans-serif" font-size="20"
+      fill="{_CREAM}" text-anchor="end" opacity="0.75">{label}</text>
 </svg>"""
