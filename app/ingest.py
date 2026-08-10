@@ -139,6 +139,11 @@ class Product:
     pitch: str | None = None
     pitch_truncated: bool = False
 
+    # Spanish display text for the human-facing /p/ page only - never part of a tool
+    # response, which always carries the English catalogue value (see app/search.py).
+    name_es: str | None = None
+    description_es: str | None = None
+
     duplicate_group_id: str | None = None
     also_in_categories: list[str] = field(default_factory=list)
 
@@ -528,6 +533,47 @@ def description_hash(description: str) -> str:
     return hashlib.sha256(description.encode("utf-8")).hexdigest()[:16]
 
 
+def translation_hash(name: str, description: str) -> str:
+    return hashlib.sha256(f"{name}\n{description}".encode("utf-8")).hexdigest()[:16]
+
+
+def _load_translations(path: Path) -> dict[str, dict[str, str]]:
+    """Load precomputed Spanish name/description, keyed by product id.
+
+    Same shape and same staleness contract as the pitch cache: absent or unreadable
+    is fine (the /p/ page falls back to the English catalogue value), and an entry
+    whose hash no longer matches the current name+description is ignored rather than
+    shown - a stale translation of a since-changed product is worse than none.
+    """
+    if not path.exists():
+        return {}
+    try:
+        data = json.loads(path.read_text(encoding="utf-8"))
+        return data if isinstance(data, dict) else {}
+    except (OSError, json.JSONDecodeError) as exc:
+        log.warning("Ignoring unreadable translation cache %s: %s", path, exc)
+        return {}
+
+
+def _apply_translations(products: Iterable[Product], cache: dict[str, dict[str, str]]) -> int:
+    applied = 0
+    for product in products:
+        entry = cache.get(product.product_id)
+        if not entry:
+            continue
+        if entry.get("hash") != translation_hash(product.name, product.description or ""):
+            continue                              # stale - fall back to English
+        name_es = clean_text(entry.get("name_es"))[:MAX_NAME_CHARS]
+        description_es = clean_text(entry.get("description_es"))[:MAX_DESCRIPTION_CHARS]
+        if name_es:
+            product.name_es = name_es
+        if description_es:
+            product.description_es = description_es
+        if name_es or description_es:
+            applied += 1
+    return applied
+
+
 def _apply_cached_pitches(products: Iterable[Product], cache: dict[str, dict[str, str]]) -> int:
     """Use a cached pitch only when it still matches the description it came from."""
     applied = 0
@@ -607,7 +653,11 @@ def _index_product(product: Product) -> None:
         product.popularity = product.rating * math.log10((product.reviews_count or 0) + 10)
 
 
-def load_catalog(csv_path: Path, pitches_path: Path | None = None) -> Catalog:
+def load_catalog(
+    csv_path: Path,
+    pitches_path: Path | None = None,
+    translations_path: Path | None = None,
+) -> Catalog:
     """Read, validate and index the catalogue. Raises only on unusable input."""
     report = DataQualityReport(source_file=str(csv_path))
     rows = _read_rows(csv_path, report)
@@ -641,6 +691,11 @@ def load_catalog(csv_path: Path, pitches_path: Path | None = None) -> Catalog:
         applied = _apply_cached_pitches(products, _load_cached_pitches(pitches_path))
         if applied:
             log.info("Applied %d precomputed pitches", applied)
+
+    if translations_path is not None:
+        applied_es = _apply_translations(products, _load_translations(translations_path))
+        if applied_es:
+            log.info("Applied %d Spanish translations", applied_es)
 
     for product in products:
         _index_product(product)

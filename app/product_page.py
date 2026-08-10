@@ -90,8 +90,18 @@ def _detail_rows(product: dict[str, Any]) -> str:
     return f"<dl>{items}</dl>"
 
 
-def render_product(product: dict[str, Any], alternatives: list[dict[str, Any]] | None) -> str:
-    name = escape(product["name"])
+def render_product(
+    product: dict[str, Any],
+    alternatives: list[dict[str, Any]] | None,
+    *,
+    name_es: str | None = None,
+    description_es: str | None = None,
+    alt_names_es: dict[str, str] | None = None,
+) -> str:
+    # name_es/description_es come from a precomputed, optional translation cache
+    # (app/ingest.py) - absent is fine, this page just falls back to the English
+    # catalogue value the same way the tools always do.
+    name = escape(name_es or product["name"])
     price = f"{product['price_eur']:g} €"
     stock = product.get("stock_level")
     image = f'<img class="hero-img" src="/p/{escape(product["product_id"])}/image.svg" alt="">'
@@ -110,12 +120,14 @@ def render_product(product: dict[str, Any], alternatives: list[dict[str, Any]] |
         suffix = f" ({count} opiniones)" if count else ""
         rating_line = f'<p>&#9733; {product["rating"]:g}{escape(suffix)}</p>'
 
-    description = escape(product.get("description") or product.get("pitch") or "")
+    description = escape(description_es or product.get("description") or product.get("pitch") or "")
 
     alt_html = ""
     if alternatives:
+        alt_names_es = alt_names_es or {}
         links = "".join(
-            f'<a href="{escape(a["product_url"])}">{escape(a["name"])} '
+            f'<a href="{escape(a["product_url"])}">'
+            f'{escape(alt_names_es.get(a["product_id"], a["name"]))} '
             f'&mdash; {a["price_eur"]:g} €</a>'
             for a in alternatives
             if a.get("product_url")
@@ -133,4 +145,4 @@ def render_product(product: dict[str, Any], alternatives: list[dict[str, Any]] |
 {_detail_rows(product)}
 {alt_html}
 """
-    return _page(f"{product['name']} - Focolare", body)
+    return _page(f"{name_es or product['name']} - Focolare", body)

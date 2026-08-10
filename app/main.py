@@ -52,7 +52,7 @@ async def lifespan(app: FastAPI):
     global _catalog, _settings
     _settings = Settings.load()
     auth.configure(require_api_token(_settings))
-    _catalog = load_catalog(_settings.csv_path, _settings.pitches_path)
+    _catalog = load_catalog(_settings.csv_path, _settings.pitches_path, _settings.translations_es_path)
     app.servers = [{"url": _settings.public_base_url, "description": "Catalog Service"}]
     app.openapi_schema = None          # drop any document cached before servers was set
     yield
@@ -176,14 +176,33 @@ async def product_detail_page(product_id: str) -> HTMLResponse:
     auth, not in the spec. Reuses search.get_product_details, the same function the
     search_products/get_product_details tools call, so this page can never disagree
     with what the agent already said.
+
+    Spanish display text (name_es/description_es) lives only on the catalogue's
+    Product dataclass, never in a tool response, so it is looked up separately here
+    rather than read off `payload` - keeping it out of the JSON API surface entirely.
     """
     payload = search.get_product_details(
         get_catalog(), product_id, base_url=_settings.public_base_url
     )
     if payload["status"] != "ok":
         return HTMLResponse(product_page.render_not_found(product_id), status_code=404)
+
+    catalog = get_catalog()
+    product = catalog.get(product_id)
+    alternatives = payload.get("alternatives") or []
+    alt_names_es = {
+        alt["product_id"]: alt_product.name_es
+        for alt in alternatives
+        if (alt_product := catalog.get(alt["product_id"])) and alt_product.name_es
+    }
     return HTMLResponse(
-        product_page.render_product(payload["product"], payload.get("alternatives"))
+        product_page.render_product(
+            payload["product"],
+            alternatives,
+            name_es=product.name_es if product else None,
+            description_es=product.description_es if product else None,
+            alt_names_es=alt_names_es,
+        )
     )
 
 

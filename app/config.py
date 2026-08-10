@@ -23,6 +23,7 @@ class Settings:
     api_token: str
     csv_path: Path
     pitches_path: Path
+    translations_es_path: Path
     port: int
     public_base_url: str
 
@@ -32,6 +33,9 @@ class Settings:
             api_token=os.environ.get("CATALOG_API_TOKEN", ""),
             csv_path=Path(os.environ.get("CATALOG_CSV_PATH", "data/gift-shop-catalog.csv")),
             pitches_path=Path(os.environ.get("CATALOG_PITCHES_PATH", "data/pitches.json")),
+            translations_es_path=Path(
+                os.environ.get("CATALOG_TRANSLATIONS_ES_PATH", "data/translations_es.json")
+            ),
             port=int(os.environ.get("PORT", "8080")),
             # The spec is pasted into indigo.ai rather than fetched, so it must carry
             # an absolute base URL - a relative one leaves the platform nowhere to call.

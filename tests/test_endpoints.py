@@ -409,3 +409,28 @@ def test_product_page_escapes_untrusted_catalogue_text():
     assert "<script>" not in html
     assert "<img src=x" not in html  # the hostile one; the page's own hero <img> is fine
     assert "&lt;script&gt;" in html
+
+
+def test_product_page_prefers_spanish_when_available():
+    from app.product_page import render_product
+
+    product = {
+        "product_id": "HL-001",
+        "name": "Aurora Table Lamp",
+        "price_eur": 129.0,
+        "description": "A dimmable oak lamp with a linen shade.",
+    }
+    html = render_product(
+        product, alternatives=None, name_es="Lámpara de Mesa Aurora", description_es="Una lámpara de roble regulable con pantalla de lino."
+    )
+    assert "Lámpara de Mesa Aurora" in html
+    assert "Aurora Table Lamp" not in html
+    assert "Una lámpara de roble regulable" in html
+
+
+def test_product_page_falls_back_to_english_without_a_translation():
+    from app.product_page import render_product
+
+    product = {"product_id": "HL-001", "name": "Aurora Table Lamp", "price_eur": 129.0}
+    html = render_product(product, alternatives=None)
+    assert "Aurora Table Lamp" in html

@@ -6,6 +6,7 @@ the guards must hold for the next export, not just this one.
 
 from __future__ import annotations
 
+import json
 from pathlib import Path
 
 import pytest
@@ -18,6 +19,7 @@ from app.ingest import (
     parse_bool,
     parse_money,
     split_multi,
+    translation_hash,
     truncate,
 )
 
@@ -257,3 +259,46 @@ def test_vocabularies_are_derived_from_the_data(catalog):
     """A value we never hardcoded still becomes a legal filter."""
     assert "birthday" in catalog.occasions
     assert catalog.categories == sorted(set(catalog.categories), key=catalog.categories.index)
+
+
+# --- Spanish translation cache (display-only, never a tool value) --------------
+
+
+def test_translation_applied_when_hash_matches(tmp_path):
+    cache = {
+        "NA-001": {
+            "hash": translation_hash("Control Product", "A perfectly ordinary product."),
+            "name_es": "Producto de Control",
+            "description_es": "Un producto perfectamente normal.",
+        }
+    }
+    path = tmp_path / "translations_es.json"
+    path.write_text(json.dumps(cache), encoding="utf-8")
+
+    translated = load_catalog(FIXTURE, None, path)
+    product = translated.get("NA-001")
+    assert product.name_es == "Producto de Control"
+    assert product.description_es == "Un producto perfectamente normal."
+
+
+def test_stale_translation_is_ignored(tmp_path):
+    """The name/description changed since the cache was built - fall back to English."""
+    cache = {
+        "NA-001": {
+            "hash": translation_hash("Some Old Name", "Some old description."),
+            "name_es": "Nombre Antiguo",
+            "description_es": "Descripción antigua.",
+        }
+    }
+    path = tmp_path / "translations_es.json"
+    path.write_text(json.dumps(cache), encoding="utf-8")
+
+    translated = load_catalog(FIXTURE, None, path)
+    product = translated.get("NA-001")
+    assert product.name_es is None
+    assert product.description_es is None
+
+
+def test_missing_translations_file_is_fine(tmp_path):
+    translated = load_catalog(FIXTURE, None, tmp_path / "does-not-exist.json")
+    assert translated.get("NA-001").name_es is None
