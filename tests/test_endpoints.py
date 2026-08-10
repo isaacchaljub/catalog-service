@@ -330,7 +330,7 @@ def test_product_page_needs_no_auth(client):
     """Clicked by a shopper's browser, not called by the model - no bearer token."""
     response = client.get("/p/HL-001")
     assert response.status_code == 200
-    assert "Aurora Table Lamp" in response.text
+    assert "Lámpara de Mesa Aurora" in response.text
 
 
 def test_product_page_404s_for_unknown_product(client):

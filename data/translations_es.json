@@ -1,0 +1,762 @@
+{
+  "HL-001": {
+    "hash": "d9aa730130af3ff8",
+    "name_es": "Lámpara de Mesa Aurora",
+    "description_es": "Una lámpara de roble regulable con pantalla de lino que emite un brillo suave y bajo. Se ve cara sin presumir."
+  },
+  "HL-002": {
+    "hash": "3c9cd2aa593a19a8",
+    "name_es": "Lámpara de Pie Halden",
+    "description_es": "Una lámpara de arco que se inclina sobre un sillón. Base sólida, sin tambaleo."
+  },
+  "HL-003": {
+    "hash": "9e47d0414fd517e6",
+    "name_es": "Vela de Cerámica Ember",
+    "description_es": "Cedro, pimienta negra y un poco de humo. Arde durante aproximadamente cincuenta horas y el recipiente vale la pena guardarlo."
+  },
+  "HL-004": {
+    "hash": "bfb77c82d540f65e",
+    "name_es": "Vela de Higo y Lino",
+    "description_es": "Higo verde y pasto cortado. Más ligera que la Ember, mejor para un dormitorio."
+  },
+  "HL-005": {
+    "hash": "4cf027acaba5c917",
+    "name_es": "Juego de Votivos Trío",
+    "description_es": "Tres aromas pequeños en una caja: higo, cedro, sal marina. La opción segura cuando no sabes qué le gusta a alguien."
+  },
+  "HL-006": {
+    "hash": "0818f3cc6fd22ef2",
+    "name_es": "Jarrón de Gres, Alto",
+    "description_es": "Modelado a mano, por lo que no hay dos iguales. Sostiene tallos largos sin volcarse."
+  },
+  "HL-007": {
+    "hash": "e5a38f5ac3c0a02d",
+    "name_es": "Jarrón de Gres, Bajo",
+    "description_es": "El hermano más pequeño. Ideal para flores de supermercado, que es lo que la gente realmente compra."
+  },
+  "HL-008": {
+    "hash": "8aff5fbed5078dbf",
+    "name_es": "Grupo de Jarrones de Capullo",
+    "description_es": "Cinco jarrones de vidrio pequeños que se agrupan juntos. Uno por tallo."
+  },
+  "HL-009": {
+    "hash": "8c5293551bd30908",
+    "name_es": "Manta de Alpaca",
+    "description_es": "Genuinamente suave, genuinamente cálida, y lo suficientemente ligera para usar realmente. El tipo de cosa que nadie compra para sí mismo."
+  },
+  "HL-010": {
+    "hash": "4bbfa05513d73599",
+    "name_es": "Manta de Algodón Waffle",
+    "description_es": "Lavable, sin pretensiones, se vuelve más suave con el uso. La versión cotidiana de la alpaca."
+  },
+  "HL-011": {
+    "hash": "fae279e5b2afd9d1",
+    "name_es": "Par de Cojines de Lino",
+    "description_es": "Dos fundas, insertos incluidos. Piedra lavada para que parezcan vividas desde el primer día."
+  },
+  "HL-012": {
+    "hash": "e190b140f12a2875",
+    "name_es": "Difusor de Caña, Cedro",
+    "description_es": "Tres meses de aroma sin llama. Sensato para cualquiera con gatos o niños pequeños."
+  },
+  "HL-013": {
+    "hash": "fadd82df4a9df1c8",
+    "name_es": "Dúo de Spray de Ambiente",
+    "description_es": "Gran regalo."
+  },
+  "HL-014": {
+    "hash": "2e55ab63d14681d2",
+    "name_es": "Reloj de Pared Nórdico",
+    "description_es": "Movimiento silencioso de barrido, sin tictac. Se lee claramente desde al otro lado de la habitación."
+  },
+  "HL-015": {
+    "hash": "d045fe16e9d5b2f3",
+    "name_es": "Sujetalibros de Mármol",
+    "description_es": "Lo suficientemente pesados para sostener un estante de libros de tapa dura. Cada par tiene veteado diferente."
+  },
+  "HL-016": {
+    "hash": "ead8ba1bd3ff6c5c",
+    "name_es": "Marco de Fotos de Latón 13x18",
+    "description_es": "Envejece a una pátina cálida. Se coloca o cuelga."
+  },
+  "HL-017": {
+    "hash": "996347d6b8ae26c6",
+    "name_es": "Cesta de Almacenamiento Tejida",
+    "description_es": "Sostiene mantas, leña o los juguetes que nadie guarda."
+  },
+  "HL-018": {
+    "hash": "2e71bbc424ff46ae",
+    "name_es": "Bandeja de Entrada, Nogal",
+    "description_es": "Llaves, cartera, reloj. Resuelve una pequeña molestia diaria."
+  },
+  "HL-019": {
+    "hash": "8eb5adb4220eeeb6",
+    "name_es": "Maceta de Cerámica, Mediana",
+    "description_es": "Agujero de drenaje y platillo a juego, que la mayoría de macetas a este precio no incluyen."
+  },
+  "HL-020": {
+    "hash": "1bf83f78ecc6e4dc",
+    "name_es": "Maceta Colgante Aurora",
+    "description_es": "El mismo esmalte que la maceta mediana, en una cuerda de algodón. Se vende sin la planta."
+  },
+  "HL-021": {
+    "hash": "47dda302493e9641",
+    "name_es": "Kit de Jardín de Hierbas",
+    "description_es": "Albahaca, tomillo y menta con discos de tierra e instrucciones que asumen que no sabes nada."
+  },
+  "HL-022": {
+    "hash": "71f69ad01bf93d36",
+    "name_es": "Felpudo de Lana",
+    "description_es": "Lana gruesa que realmente quita barro de las botas. No para afuera bajo la lluvia."
+  },
+  "HL-023": {
+    "hash": "7dac4420377a2b2c",
+    "name_es": "Juego de Posavasos Terrazzo",
+    "description_es": "Cuatro posavasos con respaldo de corcho. Cada uno tiene un patrón de chip diferente."
+  },
+  "HL-024": {
+    "hash": "6d50875b2259330f",
+    "name_es": "Juego de Vasos de Vidrio Ámbar",
+    "description_es": "Seis vasos en ámbar ahumado. Seguros para lavavajillas, cosa que los más elegantes nunca son."
+  },
+  "HL-025": {
+    "hash": "e3179f883c0df3dc",
+    "name_es": "Alfombra de Piel de Oveja, Pequeña",
+    "description_es": "Draped sobre una silla en lugar de en el piso, principalmente. Ética responsable, certificado en la caja."
+  },
+  "HL-026": {
+    "hash": "052ece68f1a64021",
+    "name_es": "Escalera de Roble para Servir",
+    "description_es": "Una escalera inclinada para toallas o mantas. Se envía plana, se ensambla en diez minutos."
+  },
+  "HL-027": {
+    "hash": "caed4954ae8fb6d1",
+    "name_es": "Juego de Incienso, Japonés",
+    "description_es": "Tres cajas, desde sándalo hasta té verde, con un pequeño quemador de cerámica."
+  },
+  "HL-028": {
+    "hash": "ec9eec7dedfde65c",
+    "name_es": "Camino de Mesa de Lino",
+    "description_es": "Dos metros. Se arruga inmediatamente y se supone que debe hacerlo."
+  },
+  "KD-001": {
+    "hash": "d912471ea5460756",
+    "name_es": "Cuchillo de Chef 20cm",
+    "description_es": "Un verdadero gyuto japonés. Sostiene un filo, se siente equilibrado, y sobrevivirá a quien lo reciba."
+  },
+  "KD-002": {
+    "hash": "fcdbf56ab6c2ff0d",
+    "name_es": "Cuchillo de Pelar 9cm",
+    "description_es": "El cuchillo que la gente realmente toma más. Se empareja con el gyuto."
+  },
+  "KD-003": {
+    "hash": "311aaaceadc7405e",
+    "name_es": "Piedra de Afilar Cuchillos",
+    "description_es": "Piedra combinada de 1000/3000 granos con base antideslizante. Viene con una tarjeta explicando el ángulo."
+  },
+  "KD-004": {
+    "hash": "f765033af531d176",
+    "name_es": "Cafetera Moka de 3 Tazas",
+    "description_es": "El clásico italiano en el tamaño que cabe dos tazas. Base compatible con inducción."
+  },
+  "KD-005": {
+    "hash": "ad6db2ecda81fbc3",
+    "name_es": "Juego de Vertido",
+    "description_es": "Jarra, gotero, collar de madera y cincuenta filtros. Para la persona que tiene opiniones sobre la temperatura del agua."
+  },
+  "KD-006": {
+    "hash": "c11dc9cbdb58dd03",
+    "name_es": "Molinillo de Café de Burr, Manual",
+    "description_es": "Ajuste escalonado de espresso a prensa francesa. Silencioso, cosa que los eléctricos no son."
+  },
+  "KD-007": {
+    "hash": "6d8ed2dfa8ad32a1",
+    "name_es": "Jarra de Infusión en Frío",
+    "description_es": "Un litro de noche en la nevera. Malla fina, sin restos."
+  },
+  "KD-008": {
+    "hash": "837833121216b11a",
+    "name_es": "Kit de Cócteles, Diez Piezas",
+    "description_es": "Coctelera, medidor, colador, macerador, cuchara, pinzas, tres vertedores y un soporte. Tarjeta de receta para seis clásicos."
+  },
+  "KD-009": {
+    "hash": "1fabbfb6b8296aac",
+    "name_es": "Vasos de Whisky de Cristal, Par",
+    "description_es": "Base pesada, borde fino. Dos, para que se usen juntos."
+  },
+  "KD-010": {
+    "hash": "2e43ba5f1a0454a5",
+    "name_es": "Preservador de Vino",
+    "description_es": "Bombea el aire hacia afuera y mantiene una botella abierta bebible durante aproximadamente una semana."
+  },
+  "KD-011": {
+    "hash": "2c9070552dd1556d",
+    "name_es": "Tabla de Madera de Olivo, Grande",
+    "description_es": "Cada tabla tiene veta diferente. Lo suficientemente grande para un curso de queso adecuado."
+  },
+  "KD-012": {
+    "hash": "a417024ea9f3ef25",
+    "name_es": "Juego de Tabla de Queso de Pizarra",
+    "description_es": "Tabla de pizarra, cuatro marcadores y tres cuchillos. Escribe los nombres del queso en la pizarra."
+  },
+  "KD-013": {
+    "hash": "addb8a56b97eff5d",
+    "name_es": "Cazuela de Hierro Esmaltada 24cm",
+    "description_es": "Hierro fundido con revestimiento de esmalte, del horno a la mesa. Pesada, y ese es el punto."
+  },
+  "KD-014": {
+    "hash": "aabb8ca6495ba661",
+    "name_es": "Sartén de Acero al Carbono 26cm",
+    "description_es": "Pre-sazonada, mejora cada vez que la usas. Nunca será segura para lavavajillas y tampoco debería serlo."
+  },
+  "KD-015": {
+    "hash": "e800676faee98944",
+    "name_es": "Kit de Hacer Pasta",
+    "description_es": "Rodillo de manivela manual, dos cortadores y un estante de secado. Un proyecto de fin de semana, no uno entre semana."
+  },
+  "KD-016": {
+    "hash": "9c5ad9f6fb8de437",
+    "name_es": "Juego de Horneado de Pan",
+    "description_es": "Banneton, lame, raspador y un couche de lino. Iniciador de masa madre no incluido, deliberadamente."
+  },
+  "KD-017": {
+    "hash": "7d0015960805b337",
+    "name_es": "Juego de Cena de Cerámica, Cuatro",
+    "description_es": "Dieciséis piezas para cuatro personas. Resistente a astillas y se apila correctamente."
+  },
+  "KD-018": {
+    "hash": "9c9062a6aaa3ab5a",
+    "name_es": "Cuencos de Pasta Hechos a Mano, Par",
+    "description_es": "Anchos y superficiales, la forma correcta para pasta y para todo lo demás que la gente pone en cuencos."
+  },
+  "KD-019": {
+    "hash": "dd76c60c6029664e",
+    "name_es": "Tazas de Medir de Cobre",
+    "description_es": "Cuatro tazas anidadas. Lo suficientemente decorativas para colgar, lo suficientemente precisas para usar."
+  },
+  "KD-020": {
+    "hash": "1529c09e90945fbc",
+    "name_es": "Molinos de Sal y Pimienta, Par",
+    "description_es": "Mecanismo de molienda de cerámica, ajustable de grueso a fino. Garantía de por vida en el mecanismo."
+  },
+  "KD-021": {
+    "hash": "513f92d413aca7b1",
+    "name_es": "Tetera de Infusión",
+    "description_es": "Vidrio para que veas las hojas abrirse. Canasta de acero extraíble, 800ml."
+  },
+  "KD-022": {
+    "hash": "f4df16b31759aa7c",
+    "name_es": "Vuelo de Té de Hojas Sueltas",
+    "description_es": "Seis latas, seis orígenes, notas de degustación en cada una. Suficiente de cada una para aproximadamente diez tazas."
+  },
+  "KD-023": {
+    "hash": "6d50875b2259330f",
+    "name_es": "Juego de Vasos de Vidrio Ámbar",
+    "description_es": "Seis vasos en ámbar ahumado. Seguros para lavavajillas, cosa que los más elegantes nunca son."
+  },
+  "KD-024": {
+    "hash": "47dda302493e9641",
+    "name_es": "Kit de Jardín de Hierbas",
+    "description_es": "Albahaca, tomillo y menta con discos de tierra e instrucciones que asumen que no sabes nada."
+  },
+  "TG-001": {
+    "hash": "a09e11a43e17f2e6",
+    "name_es": "Auriculares Inalámbricos con ANC",
+    "description_es": "Treinta horas con cancelación de ruido encendida. La funda es lo suficientemente fina para una mochila de portátil, cosa que la mayoría de fundas no son."
+  },
+  "TG-002": {
+    "hash": "b07bcdaffa072480",
+    "name_es": "Auriculares Inalámbricos Pro",
+    "description_es": "Cuatro tamaños de puntas de oído en la caja. Buen ANC para el tamaño, sobreviven una carrera bajo la lluvia."
+  },
+  "TG-003": {
+    "hash": "3d416c45dae38d7c",
+    "name_es": "Auriculares de Deporte de Oreja Abierta",
+    "description_es": "Se sientan fuera del canal auditivo para que todavía escuches el tráfico. Para correr, no para volar."
+  },
+  "TG-004": {
+    "hash": "2b4c76dc1bed30be",
+    "name_es": "Altavoz Portátil, Impermeable",
+    "description_es": "IP67, flota, doce horas. Lo suficientemente fuerte para una cocina o un jardín pequeño."
+  },
+  "TG-005": {
+    "hash": "d52eb3952c37beba",
+    "name_es": "Tocadiscos, Accionamiento de Correa",
+    "description_es": "Preamplificador incorporado para que se conecte a cualquier cosa. Viene con un buen cartucho ya montado."
+  },
+  "TG-006": {
+    "hash": "457b30e77e336bdd",
+    "name_es": "E-Reader 7in Sin Reflejos",
+    "description_es": "Luz frontal cálida y fría, impermeable, semanas de batería. La pantalla realmente parece papel."
+  },
+  "TG-007": {
+    "hash": "1e29a3c33ebb282d",
+    "name_es": "Funda de E-Reader, Tela",
+    "description_es": "Magnética, despierta y duerme el dispositivo. Se ajusta al de 7in solo."
+  },
+  "TG-008": {
+    "hash": "659a6c5ad889035c",
+    "name_es": "Marco de Fotos Digital 10in",
+    "description_es": "Los parientes envían fotos desde sus teléfonos. La configuración toma cinco minutos, cosa que importa para el destinatario."
+  },
+  "TG-009": {
+    "hash": "ce6e9a67249c6293",
+    "name_es": "Enchufe Inteligente, Paquete de Cuatro",
+    "description_es": "Programación y control por voz. Sin concentrador necesario, que es toda la razón para comprar estos."
+  },
+  "TG-010": {
+    "hash": "4ae153c2d1d09893",
+    "name_es": "Reloj Despertador de Amanecer",
+    "description_es": "Se ilumina durante treinta minutos antes de la alarma. Funciona correctamente en una habitación con persianas opacas."
+  },
+  "TG-011": {
+    "hash": "e8cf6b703a6fab81",
+    "name_es": "Monitor de Calidad del Aire",
+    "description_es": "CO2, partículas, humedad, temperatura. Útil en un piso, revelador en una oficina."
+  },
+  "TG-012": {
+    "hash": "cb72829acbed4a2c",
+    "name_es": "Teclado Mecánico, 65%",
+    "description_es": "Zócalos intercambiables para que los conmutadores cambien sin soldadura. Se envía con cafés táctiles marrones."
+  },
+  "TG-013": {
+    "hash": "e6d1910972869466",
+    "name_es": "Paquete de Muestras de Conmutadores",
+    "description_es": "Nueve conmutadores para probar antes de comprometerse con noventa. Un buen complemento, un regalo delgado por sí solo."
+  },
+  "TG-014": {
+    "hash": "61ce77b8ff0cfccd",
+    "name_es": "Ratón Vertical, Inalámbrico",
+    "description_es": "Sostiene la muñeca en cincuenta y siete grados. Tarda aproximadamente una semana en dejar de sentirse extraño."
+  },
+  "TG-015": {
+    "hash": "ce2df6b525d44631",
+    "name_es": "Barra de Luz de Monitor",
+    "description_es": "Se sujeta a la parte superior de una pantalla e ilumina el escritorio, no la pantalla. Sin reflejos."
+  },
+  "TG-016": {
+    "hash": "3dca7aa73c0ebbee",
+    "name_es": "Soporte de Portátil, Plegable",
+    "description_es": "Se pliega plano al tamaño de un libro de bolsillo. Seis posiciones de altura."
+  },
+  "TG-017": {
+    "hash": "4caf074b61b94019",
+    "name_es": "Banco de Energía 20000mAh",
+    "description_es": "100W de salida, así que carga un portátil, no solo un teléfono. Capacidad legal para aerolínea."
+  },
+  "TG-018": {
+    "hash": "385aa54c58026f1d",
+    "name_es": "Soporte de Cartera Magnética",
+    "description_es": "Tres tarjetas, se pliega en un soporte. Imanes débiles en fundas más gruesas de 2mm."
+  },
+  "TG-019": {
+    "hash": "6dba1aa22524060d",
+    "name_es": "Cámara Instantánea",
+    "description_es": "Imprime en noventa segundos. Diez disparos de película en la caja, luego se vuelve caro."
+  },
+  "TG-020": {
+    "hash": "95c65813e6327140",
+    "name_es": "Paquete Doble de Película",
+    "description_es": "Veinte disparos para la cámara instantánea."
+  },
+  "TG-021": {
+    "hash": "69e789fadbafb05a",
+    "name_es": "Tableta de Dibujo, Pequeña",
+    "description_es": "Bolígrafo sin batería, 8192 niveles de presión. Funciona con el software gratuito que todos realmente usan."
+  },
+  "TG-022": {
+    "hash": "4841ac59a1508257",
+    "name_es": "Consola de Juegos Portátil, Retro",
+    "description_es": "Juega cartuchos y emula el resto. Excelente cruceta, que es lo más importante."
+  },
+  "TG-023": {
+    "hash": "fd0e1a809108ee48",
+    "name_es": "Máquina de Ruido",
+    "description_es": "Ruido real basado en ventilador en lugar de una grabación en bucle. Sin aplicación, sin luces, sin suscripción."
+  },
+  "TG-024": {
+    "hash": "22c6530f2ee13b0d",
+    "name_es": "Anillo Inteligente, Seguimiento del Sueño",
+    "description_es": "El kit de calibración se envía primero, luego el anillo. Se requiere suscripción después del primer año - vale la pena decir en voz alta."
+  },
+  "TG-025": {
+    "hash": "870f7e72494be6cb",
+    "name_es": "Altavoces de Estantería, Par",
+    "description_es": "Pasivos, así que necesitan un amplificador que el destinatario podría no poseer. Lo mejor sonoro en el catálogo y lo más fácil de equivocarse como regalo."
+  },
+  "BW-001": {
+    "hash": "858e4273ba00e51f",
+    "name_es": "Par de Fundas de Almohada de Seda",
+    "description_es": "Dos fundas, lavables a máquina en frío. Más suave para el cabello que el algodón, que es la razón real por la que la gente las ama."
+  },
+  "BW-002": {
+    "hash": "b54b0fea84543e13",
+    "name_es": "Antifaz Ponderado",
+    "description_es": "Se calienta en el microondas o se enfría en el congelador. Lo suficientemente pesado para sentir que es algo."
+  },
+  "BW-003": {
+    "hash": "7a371fbd5fda919e",
+    "name_es": "Juego de Descubrimiento de Cuidado de la Piel",
+    "description_es": "Cinco tamaños de viaje de la gama completa. La forma sensata de regalar cuidado de la piel sin adivinar."
+  },
+  "BW-004": {
+    "hash": "5080f338ed4510fd",
+    "name_es": "Suero de Vitamina C 30ml",
+    "description_es": "Ácido L-ascórbico al 15% en una bomba opaca. Seis meses una vez abierto."
+  },
+  "BW-005": {
+    "hash": "da2daefc5d71cb3b",
+    "name_es": "Trío de Crema para Manos",
+    "description_es": "Tres aromas, tamaño de bolsillo. El regalo de agradecimiento predeterminado por una razón."
+  },
+  "BW-006": {
+    "hash": "d3d5eda55e5842cb",
+    "name_es": "Kit de Cuidado de la Barba",
+    "description_es": "Aceite, bálsamo, peine y tijeras en una lata. Cedro y bergamota, no lo habitual dulce."
+  },
+  "BW-007": {
+    "hash": "541ff0162dc3534a",
+    "name_es": "Juego de Rasuradora de Seguridad",
+    "description_es": "Rasuradora, soporte, brocha y veinte cuchillas. Más barato que los cartuchos en cuatro meses."
+  },
+  "BW-008": {
+    "hash": "2282f24c65ee7fbc",
+    "name_es": "Jabón de Afeitar y Cuenco",
+    "description_es": "Sándalo, dura aproximadamente seis meses de uso diario. Recargas vendidas por separado."
+  },
+  "BW-009": {
+    "hash": "bddc6fa4ccbb3e88",
+    "name_es": "Eau de Parfum, Higo y Cedro",
+    "description_es": "Cincuenta mililitros, unisex, se seca cálido. Arriesgado como regalo a menos que conozcas el gusto de la persona."
+  },
+  "BW-010": {
+    "hash": "abedc7841995306c",
+    "name_es": "Viales de Descubrimiento de Fragancia",
+    "description_es": "Seis viales de 2ml con un vale hacia una botella completa. La respuesta al riesgo anterior."
+  },
+  "BW-011": {
+    "hash": "f02a02f20f38d8a3",
+    "name_es": "Pistola de Masaje, Compacta",
+    "description_es": "Cuatro cabezales, cinco velocidades, lo suficientemente silenciosa para usar frente al televisor."
+  },
+  "BW-012": {
+    "hash": "e842978c4a99daa8",
+    "name_es": "Juego de Colchoneta de Acupresión",
+    "description_es": "Colchoneta y almohada con bolsa de transporte. Los primeros tres minutos son desagradables y luego no lo son."
+  },
+  "BW-013": {
+    "hash": "9bf2e7ff8ed3fa93",
+    "name_es": "Rodillo de Espuma, Texturizado",
+    "description_es": "Densidad firme, superficie texturizada. No para principiantes, que deberían obtener el liso."
+  },
+  "BW-014": {
+    "hash": "402b39166ba3687f",
+    "name_es": "Colección de Baños de Inmersión",
+    "description_es": "Cuatro frascos: magnesio, rosa, eucalipto, algas. Cucharilla de madera en la caja."
+  },
+  "BW-015": {
+    "hash": "0ae6a21f9af541e4",
+    "name_es": "Juego de Toalla de Baño Turca",
+    "description_es": "Dos baño, dos mano. Delgadas, de secado rápido, se vuelven más suaves durante aproximadamente un año."
+  },
+  "BW-016": {
+    "hash": "dd29dd3a532b56e1",
+    "name_es": "Manta de Sauna",
+    "description_es": "Infrarrojo, se pliega en un armario. Grande, cara, y solo adecuada para alguien que haya mencionado querer una."
+  },
+  "BW-017": {
+    "hash": "80a67e5b9f58782b",
+    "name_es": "Tapete de Yoga, Corcho",
+    "description_es": "El agarre mejora cuando tus manos se humedecen, lo opuesto a las colchonetas de espuma."
+  },
+  "BW-018": {
+    "hash": "5424f88d760a21a9",
+    "name_es": "Juego de Banda de Resistencia",
+    "description_es": "Cinco resistencias, tela no goma, así que no se enrollan en los muslos."
+  },
+  "BS-001": {
+    "hash": "a3720d0eab5059a6",
+    "name_es": "Bolígrafo de Pluma, Nib Mediano",
+    "description_es": "Conversor y dos cartuchos incluidos. Escribe mojado, que se adapta a la mayoría del papel y no a cuadernos delgados."
+  },
+  "BS-002": {
+    "hash": "42be757f92bfa428",
+    "name_es": "Bolígrafo de Rodillo",
+    "description_es": "Más pesado de lo que parece. Toma recargas estándar, así que nunca quedará huérfano."
+  },
+  "BS-003": {
+    "hash": "756f69ff67be6295",
+    "name_es": "Muestrario de Tinta, Seis Botellas",
+    "description_es": "Seis botellas de 10ml, de azul-negro a un naranja irrazonable."
+  },
+  "BS-004": {
+    "hash": "09828af1c601c349",
+    "name_es": "Cuaderno de Tapa Dura A5, Punteado",
+    "description_es": "Se acuesta plano, 100gsm para que la pluma no sangre. 192 páginas."
+  },
+  "BS-005": {
+    "hash": "d467ceb3b6012844",
+    "name_es": "Trío de Cuaderno A6",
+    "description_es": "Tres cuadernos de bolsillo que sobreviven un bolsillo trasero durante un mes."
+  },
+  "BS-006": {
+    "hash": "1ff8f41e1a4744cf",
+    "name_es": "Cubierta de Diario de Cuero A5",
+    "description_es": "Rellenable, así que la misma cubierta lleva veinte cuadernos. Puede estar cegado con las iniciales."
+  },
+  "BS-007": {
+    "hash": "21f7a2ac224f4d86",
+    "name_es": "Diario de Escritorio 2027",
+    "description_es": "Vista de semana con cinta y bolsillo. Fechado, así que es un regalo de diciembre o nada."
+  },
+  "BS-008": {
+    "hash": "6c69ed67722e220b",
+    "name_es": "Planificador Semanal Sin Fecha",
+    "description_es": "Cincuenta y dos semanas sin fecha, así que sobrevive comenzando en marzo."
+  },
+  "BS-009": {
+    "hash": "3323d624ca57130c",
+    "name_es": "The Art of Slow Cooking",
+    "description_es": "Noventa recetas que asumen seis horas y sin supervisión. La fotografía es inusualmente buena."
+  },
+  "BS-010": {
+    "hash": "646f3c2e03aec508",
+    "name_es": "Atlas of Remote Islands",
+    "description_es": "Cincuenta islas que el autor nunca ha visitado, un mapa y una historia cada una. Confiablemente encantador."
+  },
+  "BS-011": {
+    "hash": "00e16533acde0e9f",
+    "name_es": "Clásicos Encuadernados, Juego de Seis",
+    "description_es": "Encuadernado en tela, estampado en pan de oro, en un estuche. Comprado por el estante tanto como por la lectura."
+  },
+  "BS-012": {
+    "hash": "7a56cddb211ee229",
+    "name_es": "Antología de Poesía, Bolsillo",
+    "description_es": "Doscientos poemas cortos en un libro que cabe en un bolsillo de abrigo."
+  },
+  "BS-013": {
+    "hash": "f40146fc0a5158dc",
+    "name_es": "Kit de Inicio de Caligrafía",
+    "description_es": "Portabólígrafos, cinco nibs, tinta y almohadilla de práctica con líneas. Las instrucciones son claras."
+  },
+  "BS-014": {
+    "hash": "74870f544958e2d4",
+    "name_es": "Kit de Encuadernación",
+    "description_es": "Hace tres cuadernos cosidos. Una tarde lenta y satisfactoria."
+  },
+  "BS-015": {
+    "hash": "358a39e1091fd614",
+    "name_es": "Tarjeta de Letra Prensada, Individual",
+    "description_es": "Una tarjeta."
+  },
+  "BS-016": {
+    "hash": "395b461ed6368f08",
+    "name_es": "Caja de Tarjeta de Letra Prensada, Diez",
+    "description_es": "Diez tarjetas en blanco con sobres, papel de algodón, tipo decentemente presionado para que el tipo tenga una hendidura."
+  },
+  "GP-001": {
+    "hash": "16a9d659c4c0c5d6",
+    "name_es": "Juego de Estrategia, Rutas Comerciales",
+    "description_es": "Sesenta a noventa minutos, dos a cuatro jugadores. Enseña en diez minutos y sigue siendo interesante durante cincuenta juegos."
+  },
+  "GP-002": {
+    "hash": "09660b0a1b45e26e",
+    "name_es": "Juego Cooperativo, Aguas Profundas",
+    "description_es": "Todos contra el tablero. Bueno para hogares donde la competencia termina mal."
+  },
+  "GP-003": {
+    "hash": "51196c100c525db9",
+    "name_es": "Juego de Cartas de Dos Jugadores",
+    "description_es": "Veinte minutos, cabe en una chaqueta. El que empacar para unas vacaciones."
+  },
+  "GP-004": {
+    "hash": "44cfd59d482e447e",
+    "name_es": "Juego de Fiesta, Ochenta Indicaciones",
+    "description_es": "Ruidoso, rápido, necesita al menos cuatro personas y un extrovertido."
+  },
+  "GP-005": {
+    "hash": "720c9b4920911272",
+    "name_es": "Rompecabezas de Madera 500pc, Línea de Costa",
+    "description_es": "Abedul cortado por láser con piezas caprichosas en forma de botes y pájaros. Genuinamente difícil."
+  },
+  "GP-006": {
+    "hash": "b8212ac82e9df135",
+    "name_es": "Rompecabezas 1000pc, Botánico",
+    "description_es": "Acabado mate para que no haya brillo bajo una lámpara. Póster incluido para referencia."
+  },
+  "GP-007": {
+    "hash": "867bf162d4ac53e1",
+    "name_es": "Rompecabezas 1000pc, Mapa de la Ciudad",
+    "description_es": "Muchas piezas muy similares de gris. Para alguien que encuentra el botánico demasiado fácil."
+  },
+  "GP-008": {
+    "hash": "71df731132e61cd1",
+    "name_es": "Juego de Rompecabezas de Metal, Seis",
+    "description_es": "Rompecabezas de desenredo, calificados de fácil a infernal. Soluciones en sobre sellado."
+  },
+  "GP-009": {
+    "hash": "42f93051af51af50",
+    "name_es": "Juego de Ajedrez, Ponderado",
+    "description_es": "Tablero de tamaño de torneo, piezas sentidas ponderadas. Se pliega para almacenar las piezas adentro."
+  },
+  "GP-010": {
+    "hash": "1a18c6c0b53469d6",
+    "name_es": "Backgammon Enrollable",
+    "description_es": "Se enrolla en un tubo con correa. Las piezas y los dados viven en un bolsillo."
+  },
+  "GP-011": {
+    "hash": "f977511970bc0b5d",
+    "name_es": "Dominó, Encuadernado",
+    "description_es": "Juego de doble nueve con un chasquido satisfactorio. La caja es la parte buena."
+  },
+  "GP-012": {
+    "hash": "48c01f6e1bd196e1",
+    "name_es": "Sala de Escape en una Caja",
+    "description_es": "Noventa minutos, un solo uso, y vale la pena. No mires en los sobres."
+  },
+  "OT-001": {
+    "hash": "bd39912a01bb9d13",
+    "name_es": "Botella Aislada 750ml",
+    "description_es": "Veinticuatro horas frías, doce calientes. La tapa no gotea en una bolsa, cosa que la mayoría no hace."
+  },
+  "OT-002": {
+    "hash": "59d2cb6cecbd1100",
+    "name_es": "Taza de Viaje, Hermética",
+    "description_es": "Abrir con una mano, cabe bajo una máquina de café, sobrevive ser caída."
+  },
+  "OT-003": {
+    "hash": "25f5598ff1bcc949",
+    "name_es": "Termo de Alimentos al Vacío",
+    "description_es": "La sopa se mantiene caliente hasta la hora del almuerzo. Lo suficientemente ancha para comer directamente."
+  },
+  "OT-004": {
+    "hash": "fad4c83e9401ac36",
+    "name_es": "Bolsa de Fin de Semana",
+    "description_es": "Cabe dos días incluyendo zapatos. Lona encerada, así que la lluvia bota y envejece bien."
+  },
+  "OT-005": {
+    "hash": "48d18ddd7ca5c715",
+    "name_es": "Juego de Cubos de Embalaje",
+    "description_es": "Cuatro tamaños, tapas de malla. Convierte embaladores caóticos en un poco menos caóticos."
+  },
+  "OT-006": {
+    "hash": "74169a8f9201629b",
+    "name_es": "Mochila 20L, Cierre de Rollo",
+    "description_es": "Compartimento acolchado para portátil, tela impermeable, sin marca. Se desplaza e hiked por igual."
+  },
+  "OT-007": {
+    "hash": "0661b157c9e2f96a",
+    "name_es": "Manta de Picnic, Impermeable",
+    "description_es": "Dos metros cuadrados con respaldo impermeable y correa de transporte."
+  },
+  "OT-008": {
+    "hash": "1c887a13947238da",
+    "name_es": "Hamaca de Camping",
+    "description_es": "Correas incluidas, se compacta al tamaño de una toronja, sostiene 150kg."
+  },
+  "OT-009": {
+    "hash": "26e8d1d3ccc8d4c9",
+    "name_es": "Linterna de Cabeza, Recargable",
+    "description_es": "400 lúmenes, modo de noche roja, USB-C. El modo rojo es el bit que la gente termina usando."
+  },
+  "OT-010": {
+    "hash": "c54e13ecf7efab51",
+    "name_es": "Par de Tazas de Camping Esmaltadas",
+    "description_es": "Dos tazas que se astillarán y se verán mejor por ello."
+  },
+  "JW-001": {
+    "hash": "b6de9b6c8453eb62",
+    "name_es": "Collar de Cadena de Oro Vermeil",
+    "description_es": "Cuarenta y cinco centímetros, lo suficientemente grueso para no enredarse. Vermeil, así que no pondrá la piel verde."
+  },
+  "JW-002": {
+    "hash": "26b6cdd5a4ce439f",
+    "name_es": "Colgante de Perla",
+    "description_es": "Una sola perla barroca, así que cada una es una forma ligeramente diferente."
+  },
+  "JW-003": {
+    "hash": "a1b05920e2ccb729",
+    "name_es": "Aretes Huggie, Par",
+    "description_es": "Lo suficientemente pequeños para dormir. Cierre de bisagra que no se afloja."
+  },
+  "JW-004": {
+    "hash": "38a6688069e77ee8",
+    "name_es": "Juego de Pendientes, Tres Pares",
+    "description_es": "Simple, perla y piedra. Cubre la mayoría de los trajes y la mayoría de los estados de ánimo."
+  },
+  "JW-005": {
+    "hash": "6147d2b5fd402035",
+    "name_es": "Anillo de Sello, Grabable",
+    "description_es": "Grabado a mano con hasta tres iniciales. Agregue una semana para la grabación."
+  },
+  "JW-006": {
+    "hash": "3af06e9539468c23",
+    "name_es": "Anillos de Apilamiento, Juego de Tres",
+    "description_es": "Tamaño como un conjunto. Se usan juntos o se dispersan por los dedos."
+  },
+  "JW-007": {
+    "hash": "995fc47805223790",
+    "name_es": "Correa de Reloj de Cuero 20mm",
+    "description_es": "Pernos de liberación rápida, así que cambia sin herramientas. Comprueba el ancho de oreja primero."
+  },
+  "JW-008": {
+    "hash": "5478096a170dfa11",
+    "name_es": "Pulsera, Cordón Tejido",
+    "description_es": "Deslizador ajustable, unisex, sobrevive duchas."
+  },
+  "KI-001": {
+    "hash": "99e9658e5dbdda2b",
+    "name_es": "Bloques de Construcción de Madera, 60pc",
+    "description_es": "Sesenta piezas en una bolsa de algodón. A partir de tres años, aunque los adultos también construyen con ellos."
+  },
+  "KI-002": {
+    "hash": "32478aeafa41e253",
+    "name_es": "Tablero de Equilibrio",
+    "description_es": "Mecedora, puente, tobogán, techo de guarida. El juguete más usado en la mayoría de casas que lo tienen."
+  },
+  "KI-003": {
+    "hash": "d26993ac87b32d55",
+    "name_es": "Colección de Historias Ilustradas",
+    "description_es": "Doce historias, una por noche de cama. Ilustrado a mano, no generado."
+  },
+  "KI-004": {
+    "hash": "c2e3fea551a7539d",
+    "name_es": "Kit Junior de Ciencia",
+    "description_es": "Veinte experimentos con cosas que ya tienes en casa. Supervisión de adultos para cuatro de ellos."
+  },
+  "KI-005": {
+    "hash": "4f5077caf1f6a1d4",
+    "name_es": "Estuche de Suministros de Arte para Niños",
+    "description_es": "Crayones, lápices, pasteles y papel en un estuche que se cierra correctamente."
+  },
+  "KI-006": {
+    "hash": "daec172b568bb528",
+    "name_es": "Luz Nocturna, Recargable",
+    "description_es": "Silicona, cálida y regulable, segura para llevar al baño. Se carga en una base."
+  },
+  "PT-001": {
+    "hash": "77282510d7fe719a",
+    "name_es": "Cama para Perro, Ortopédica",
+    "description_es": "Cubierta extraíble lavable, base de espuma de memoria. El tamaño grande cabe un labrador."
+  },
+  "PT-002": {
+    "hash": "7af838586fab5b3b",
+    "name_es": "Paquete de Juguetes de Cuerda",
+    "description_es": "Cuatro juguetes. Dos sobrevivirán al mes."
+  },
+  "PT-003": {
+    "hash": "3d6b1a83707fcab1",
+    "name_es": "Árbol para Gatos, Compacto",
+    "description_es": "Cabe una esquina en lugar de dominar una habitación. Postes de sisal, dos plataformas."
+  },
+  "EX-001": {
+    "hash": "19192356a539cd23",
+    "name_es": "Tarjeta de Regalo, 50 EUR",
+    "description_es": "Digital, entregada por correo electrónico, sin vencimiento. La respuesta honesta cuando no conoces a la persona."
+  },
+  "EX-002": {
+    "hash": "fc4cd16a1262abac",
+    "name_es": "Tarjeta de Regalo, 100 EUR",
+    "description_es": "Digital, entregada por correo electrónico, sin vencimiento."
+  }
+}
