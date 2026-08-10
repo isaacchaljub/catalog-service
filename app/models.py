@@ -65,9 +65,10 @@ class ProductSummary(BaseModel):
     )
     product_url: str | None = Field(
         default=None,
-        description="Link to this product's page on our site, with full details. Share "
-        "it if the shopper wants to see more, compare options themselves, or asks for a "
-        "link - do not read it aloud.",
+        description="Link to this product's page on our site. Use it to make the "
+        "product's name a link whenever you show one, e.g. [Cuchillo Puntilla de "
+        "9cm](url) instead of plain text - do not add a separate line for it or "
+        "mention the URL in words.",
     )
     image_url: str | None = Field(
         default=None,

@@ -96,11 +96,15 @@ def render_product(
     *,
     name_es: str | None = None,
     description_es: str | None = None,
+    color_es: str | None = None,
+    material_es: str | None = None,
     alt_names_es: dict[str, str] | None = None,
 ) -> str:
     # name_es/description_es come from a precomputed, optional translation cache
     # (app/ingest.py) - absent is fine, this page just falls back to the English
-    # catalogue value the same way the tools always do.
+    # catalogue value the same way the tools always do. color_es/material_es come
+    # from a fixed glossary (app/vocab_es.py) instead, since that vocabulary is
+    # small, closed and derived from the data rather than free text.
     name = escape(name_es or product["name"])
     price = f"{product['price_eur']:g} €"
     stock = product.get("stock_level")
@@ -135,6 +139,12 @@ def render_product(
         if links:
             alt_html = f'<div class="alts"><h2>Alternativas disponibles</h2>{links}</div>'
 
+    display_product = dict(product)
+    if color_es:
+        display_product["color"] = color_es
+    if material_es:
+        display_product["material"] = material_es
+
     body = f"""
 {image}
 <h1>{name}</h1>
@@ -142,7 +152,7 @@ def render_product(
 {stock_note}
 {rating_line}
 <p>{description}</p>
-{_detail_rows(product)}
+{_detail_rows(display_product)}
 {alt_html}
 """
     return _page(f"{name_es or product['name']} - Focolare", body)

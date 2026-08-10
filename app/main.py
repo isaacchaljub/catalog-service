@@ -201,6 +201,8 @@ async def product_detail_page(product_id: str) -> HTMLResponse:
             alternatives,
             name_es=product.name_es if product else None,
             description_es=product.description_es if product else None,
+            color_es=product.color_es if product else None,
+            material_es=product.material_es if product else None,
             alt_names_es=alt_names_es,
         )
     )

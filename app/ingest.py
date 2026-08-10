@@ -30,6 +30,8 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any, Iterable
 
+from app.vocab_es import translate_color, translate_material
+
 log = logging.getLogger(__name__)
 
 # --- Caps. Applied always, not only when the current export needs them. ---------
@@ -143,6 +145,8 @@ class Product:
     # response, which always carries the English catalogue value (see app/search.py).
     name_es: str | None = None
     description_es: str | None = None
+    color_es: str | None = None
+    material_es: str | None = None
 
     duplicate_group_id: str | None = None
     also_in_categories: list[str] = field(default_factory=list)
@@ -437,11 +441,13 @@ def parse_row(
 
     color = clean_text(raw.get("color"))
     product.color = color[:MAX_ATTRIBUTE_CHARS] or None
+    product.color_es = translate_color(product.color)
     if not product.color:
         issues.append(Issue(product_id, "color", "missing"))
 
     material = clean_text(raw.get("material"))
     product.material = material[:MAX_ATTRIBUTE_CHARS] or None
+    product.material_es = translate_material(product.material)
     if not product.material:
         issues.append(Issue(product_id, "material", "missing"))
 
