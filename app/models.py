@@ -31,12 +31,8 @@ class ProductSummary(BaseModel):
         description="Stable identifier, e.g. 'HL-003'. Pass this to get_product_details "
         "or find_similar_products."
     )
-    name: str = Field(description="Product name as it should be shown to the shopper.")
+    name: str = Field(description="Product name from the catalogue, in English.")
     price_eur: float = Field(description="Price in euros.")
-    category: str = Field(description="Category this product belongs to.")
-    subcategory: str | None = Field(
-        default=None, description="Narrower grouping within the category, e.g. 'Candles'."
-    )
     pitch: str | None = Field(
         default=None,
         description="One-line description of the product, at most 140 characters. "

@@ -528,20 +528,11 @@
           },
           "name": {
             "type": "string",
-            "description": "Product name as it should be shown to the shopper."
+            "description": "Product name from the catalogue, in English."
           },
           "price_eur": {
             "type": "number",
             "description": "Price in euros."
-          },
-          "category": {
-            "type": "string",
-            "description": "Category this product belongs to."
-          },
-          "subcategory": {
-            "type": "string",
-            "description": "Narrower grouping within the category, e.g. 'Candles'.",
-            "nullable": true
           },
           "pitch": {
             "type": "string",
@@ -638,7 +629,6 @@
           "product_id",
           "name",
           "price_eur",
-          "category",
           "stock_level"
         ],
         "description": "Everything known about one product."
@@ -791,20 +781,11 @@
           },
           "name": {
             "type": "string",
-            "description": "Product name as it should be shown to the shopper."
+            "description": "Product name from the catalogue, in English."
           },
           "price_eur": {
             "type": "number",
             "description": "Price in euros."
-          },
-          "category": {
-            "type": "string",
-            "description": "Category this product belongs to."
-          },
-          "subcategory": {
-            "type": "string",
-            "description": "Narrower grouping within the category, e.g. 'Candles'.",
-            "nullable": true
           },
           "pitch": {
             "type": "string",
@@ -847,7 +828,6 @@
           "product_id",
           "name",
           "price_eur",
-          "category",
           "stock_level"
         ],
         "description": "A product as it appears in a list of results - enough to recommend from."

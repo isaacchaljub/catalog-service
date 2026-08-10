@@ -198,9 +198,12 @@ reliably.
 will tell a shopper the product is rated zero out of five. Absence is unambiguous in a
 way that `null` and `0` are not.
 
-Two tiers keep list responses small: a **summary** (11 fields, ~55 tokens) for lists,
+Two tiers keep list responses small: a **summary** (9 fields, ~45 tokens) for lists,
 and a **detail** (adds brand, colour, material, tags, occasions, exact stock) only
-when the agent asks about one product.
+when the agent asks about one product. `category` and `subcategory` were cut from the
+summary: once a search has already resolved to a category, repeating it on every
+product buys nothing and only hands the model more raw English catalogue vocabulary
+it might echo instead of translate.
 
 ### Errors the agent can recover from
 

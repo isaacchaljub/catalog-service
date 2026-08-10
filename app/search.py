@@ -52,8 +52,6 @@ def to_summary(product: Product) -> dict[str, Any]:
             "product_id": product.product_id,
             "name": product.name,
             "price_eur": product.price_eur,
-            "category": product.category,
-            "subcategory": product.subcategory,
             "pitch": product.pitch,
             "stock_level": product.stock_level,
             "shipping_days": product.shipping_days,
@@ -632,7 +630,7 @@ def enforce_budget(payload: dict[str, Any], max_bytes: int = MAX_RESPONSE_BYTES)
 
     if _payload_bytes(payload) > max_bytes:
         for product in products:
-            for droppable in ("reviews_count", "gift_wrap", "subcategory"):
+            for droppable in ("reviews_count", "gift_wrap"):
                 product.pop(droppable, None)
         trims.append("some fields omitted")
 
