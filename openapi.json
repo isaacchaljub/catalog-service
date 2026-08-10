@@ -569,6 +569,11 @@
             "description": "How many reviews the rating is based on. A high rating from many reviews is worth mentioning; from three reviews it is not.",
             "nullable": true
           },
+          "product_url": {
+            "type": "string",
+            "description": "Link to this product's page on our site, with full details. Share it if the shopper wants to see more, compare options themselves, or asks for a link - do not read it aloud.",
+            "nullable": true
+          },
           "brand": {
             "type": "string",
             "description": "Brand name.",
@@ -820,6 +825,11 @@
           "reviews_count": {
             "type": "integer",
             "description": "How many reviews the rating is based on. A high rating from many reviews is worth mentioning; from three reviews it is not.",
+            "nullable": true
+          },
+          "product_url": {
+            "type": "string",
+            "description": "Link to this product's page on our site, with full details. Share it if the shopper wants to see more, compare options themselves, or asks for a link - do not read it aloud.",
             "nullable": true
           }
         },

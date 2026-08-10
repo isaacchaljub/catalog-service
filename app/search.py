@@ -46,7 +46,7 @@ def _compact(payload: dict[str, Any]) -> dict[str, Any]:
     }
 
 
-def to_summary(product: Product) -> dict[str, Any]:
+def to_summary(product: Product, *, base_url: str | None = None) -> dict[str, Any]:
     return _compact(
         {
             "product_id": product.product_id,
@@ -58,12 +58,13 @@ def to_summary(product: Product) -> dict[str, Any]:
             "gift_wrap": product.gift_wrap,
             "rating": product.rating,
             "reviews_count": product.reviews_count,
+            "product_url": f"{base_url}/p/{product.product_id}" if base_url else None,
         }
     )
 
 
-def to_detail(product: Product) -> dict[str, Any]:
-    detail = to_summary(product)
+def to_detail(product: Product, *, base_url: str | None = None) -> dict[str, Any]:
+    detail = to_summary(product, base_url=base_url)
     detail.update(
         _compact(
             {
@@ -220,6 +221,7 @@ def search_products(
     include_out_of_stock: bool = False,
     sort: str = "relevance",
     limit: int = DEFAULT_SEARCH_LIMIT,
+    base_url: str | None = None,
 ) -> dict[str, Any]:
     limit = max(1, min(limit, MAX_SEARCH_LIMIT))
 
@@ -275,6 +277,7 @@ def search_products(
             price_filtered=max_price_eur is not None or min_price_eur is not None,
             had_query=bool(query_tokens),
             include_out_of_stock=include_out_of_stock,
+            base_url=base_url,
         )
 
     max_popularity = max((p.popularity for p in catalog.products), default=0.0)
@@ -307,7 +310,7 @@ def search_products(
         "total_matches": len(ordered),
         "returned": len(page),
         "filters_applied": filters,
-        "products": [to_summary(p) for p in page],
+        "products": [to_summary(p, base_url=base_url) for p in page],
         "has_more": len(ordered) > limit,
         "notes": notes or None,
     }
@@ -322,6 +325,7 @@ def _no_match(
     price_filtered: bool,
     had_query: bool,
     include_out_of_stock: bool = False,
+    base_url: str | None = None,
 ) -> dict[str, Any]:
     """Explain what emptied the result and hand back something actionable."""
     # Anything offered as a fallback must itself be buyable. Suggesting the cheapest
@@ -346,7 +350,7 @@ def _no_match(
         within_budget = {p.product_id for p in by_price}
         over_budget = [p for p in by_attributes if p.product_id not in within_budget]
         suggestions: dict[str, Any] = {
-            "out_of_stock_matches": [to_summary(p) for p in shown],
+            "out_of_stock_matches": [to_summary(p, base_url=base_url) for p in shown],
             "relax": [
                 f"call find_similar_products with product_id "
                 f"'{shown[0].product_id}' to offer an in-stock replacement"
@@ -355,7 +359,7 @@ def _no_match(
         message = f"{len(by_price)} product(s) match, but every one is currently out of stock."
         if price_filtered and over_budget:
             nearest = min(over_budget, key=lambda p: p.price_eur)
-            suggestions["cheapest_in_scope"] = to_summary(nearest)
+            suggestions["cheapest_in_scope"] = to_summary(nearest, base_url=base_url)
             suggestions["relax"].insert(
                 0, f"raise max_price_eur to {nearest.price_eur:g} for {nearest.name}"
             )
@@ -389,7 +393,10 @@ def _no_match(
                 f"Nothing in {scope} fits that budget. "
                 f"The cheapest match is {cheapest.name} at {cheapest.price_eur:g} EUR."
             ),
-            "suggestions": {"cheapest_in_scope": to_summary(cheapest), "relax": relax},
+            "suggestions": {
+                "cheapest_in_scope": to_summary(cheapest, base_url=base_url),
+                "relax": relax,
+            },
             "notes": [
                 "Be honest about the gap rather than silently widening the search. "
                 "Offer the cheapest match, or ask whether the budget can move."
@@ -426,6 +433,7 @@ def products_by_category(
     sort: str = "popularity",
     max_price_eur: float | None = None,
     include_out_of_stock: bool = False,
+    base_url: str | None = None,
 ) -> dict[str, Any]:
     limit = max(1, min(limit, MAX_CATEGORY_LIMIT))
     offset = max(0, offset)
@@ -461,6 +469,7 @@ def products_by_category(
             price_filtered=max_price_eur is not None,
             had_query=False,
             include_out_of_stock=include_out_of_stock,
+            base_url=base_url,
         )
 
     ordered, _ = _dedupe(_sorted(available, sort, {}))
@@ -482,7 +491,7 @@ def products_by_category(
         "total_matches": len(ordered),
         "returned": len(page),
         "filters_applied": filters,
-        "products": [to_summary(p) for p in page],
+        "products": [to_summary(p, base_url=base_url) for p in page],
         "has_more": remaining > 0,
         "notes": notes or None,
     }
@@ -511,6 +520,7 @@ def find_similar_products(
     max_price_eur: float | None = None,
     include_out_of_stock: bool = False,
     limit: int = DEFAULT_SIMILAR_LIMIT,
+    base_url: str | None = None,
 ) -> dict[str, Any]:
     limit = max(1, min(limit, MAX_SIMILAR_LIMIT))
     filters: dict[str, Any] = {
@@ -554,6 +564,7 @@ def find_similar_products(
             price_filtered=max_price_eur is not None,
             had_query=False,
             include_out_of_stock=include_out_of_stock,
+            base_url=base_url,
         )
         result["message"] = (
             f"Nothing comparable to {target.name} is available"
@@ -572,7 +583,7 @@ def find_similar_products(
         "total_matches": len(ordered),
         "returned": len(page),
         "filters_applied": filters,
-        "products": [to_summary(p) for p in page],
+        "products": [to_summary(p, base_url=base_url) for p in page],
         "has_more": False,
         "notes": [
             f"Ranked by similarity to {target.name} ({target.price_eur:g} EUR). "
@@ -581,15 +592,19 @@ def find_similar_products(
     }
 
 
-def get_product_details(catalog: Catalog, product_id: str) -> dict[str, Any]:
+def get_product_details(
+    catalog: Catalog, product_id: str, *, base_url: str | None = None
+) -> dict[str, Any]:
     product = catalog.get(product_id)
     if product is None:
         return errors.not_found(catalog, product_id)
 
-    payload: dict[str, Any] = {"status": "ok", "product": to_detail(product)}
+    payload: dict[str, Any] = {"status": "ok", "product": to_detail(product, base_url=base_url)}
 
     if product.stock_level == "out_of_stock":
-        alternatives = find_similar_products(catalog, product_id=product.product_id, limit=2)
+        alternatives = find_similar_products(
+            catalog, product_id=product.product_id, limit=2, base_url=base_url
+        )
         payload["alternatives"] = alternatives.get("products") or None
         payload["message"] = f"{product.name} is currently out of stock."
         payload["notes"] = [

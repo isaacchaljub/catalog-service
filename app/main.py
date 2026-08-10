@@ -17,9 +17,9 @@ from typing import Annotated, Any, Literal
 
 from fastapi import APIRouter, Depends, FastAPI, Path, Query, Request
 from fastapi.exceptions import RequestValidationError
-from fastapi.responses import JSONResponse
+from fastapi.responses import HTMLResponse, JSONResponse
 
-from app import auth, search
+from app import auth, product_page, search
 from app.config import APP_NAME, APP_VERSION, Settings, require_api_token
 from app.ingest import Catalog, load_catalog
 from app.openapi_compat import (
@@ -168,6 +168,23 @@ async def health() -> dict[str, Any]:
         "version": APP_VERSION,
         "catalog": get_catalog().report.summary(),
     }
+
+
+@app.get("/p/{product_id}", include_in_schema=False, response_class=HTMLResponse)
+async def product_detail_page(product_id: str) -> HTMLResponse:
+    """Human-facing page a shopper lands on from a `product_url`. Not a tool - no
+    auth, not in the spec. Reuses search.get_product_details, the same function the
+    search_products/get_product_details tools call, so this page can never disagree
+    with what the agent already said.
+    """
+    payload = search.get_product_details(
+        get_catalog(), product_id, base_url=_settings.public_base_url
+    )
+    if payload["status"] != "ok":
+        return HTMLResponse(product_page.render_not_found(product_id), status_code=404)
+    return HTMLResponse(
+        product_page.render_product(payload["product"], payload.get("alternatives"))
+    )
 
 
 tools = APIRouter(dependencies=[Depends(auth.verify_bearer)], tags=["catalog"])
@@ -319,6 +336,7 @@ async def search_products(
             include_out_of_stock=include_out_of_stock,
             sort=sort,
             limit=limit,
+            base_url=_settings.public_base_url,
         )
     )
 
@@ -388,6 +406,7 @@ async def get_products_by_category(
             sort=sort,
             max_price_eur=max_price_eur,
             include_out_of_stock=include_out_of_stock,
+            base_url=_settings.public_base_url,
         )
     )
 
@@ -425,7 +444,9 @@ async def get_product_details(
         ),
     ],
 ) -> dict[str, Any]:
-    return search.get_product_details(get_catalog(), product_id)
+    return search.get_product_details(
+        get_catalog(), product_id, base_url=_settings.public_base_url
+    )
 
 
 SIMILAR_DESCRIPTION = """
@@ -476,6 +497,7 @@ async def find_similar_products(
             max_price_eur=max_price_eur,
             include_out_of_stock=include_out_of_stock,
             limit=limit,
+            base_url=_settings.public_base_url,
         )
     )
 

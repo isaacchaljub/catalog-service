@@ -63,6 +63,12 @@ class ProductSummary(BaseModel):
         description="How many reviews the rating is based on. A high rating from many "
         "reviews is worth mentioning; from three reviews it is not.",
     )
+    product_url: str | None = Field(
+        default=None,
+        description="Link to this product's page on our site, with full details. Share "
+        "it if the shopper wants to see more, compare options themselves, or asks for a "
+        "link - do not read it aloud.",
+    )
 
 
 class ProductDetail(ProductSummary):

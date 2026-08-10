@@ -321,3 +321,51 @@ def test_health_reports_data_quality(client):
     assert body["catalog"]["products_loaded"] == 152
     assert body["catalog"]["quarantined_total"] == 0
     assert body["catalog"]["duplicate_groups"] == 2
+
+
+# --- The /p/ product page -------------------------------------------------------
+
+
+def test_product_page_needs_no_auth(client):
+    """Clicked by a shopper's browser, not called by the model - no bearer token."""
+    response = client.get("/p/HL-001")
+    assert response.status_code == 200
+    assert "Aurora Table Lamp" in response.text
+
+
+def test_product_page_404s_for_unknown_product(client):
+    response = client.get("/p/ZZ-999")
+    assert response.status_code == 404
+    assert "ZZ-999" in response.text
+
+
+def test_product_page_is_not_a_tool(spec):
+    """Human-facing HTML, not something the model should ever call."""
+    assert "/p/{product_id}" not in spec["paths"]
+
+
+def test_product_page_shows_alternatives_for_out_of_stock_items(client):
+    response = client.get("/p/HL-004")  # Linen Fig Candle, out of stock in the current export
+    assert response.status_code == 200
+    assert "Agotado" in response.text
+
+
+def test_product_url_is_returned_from_the_tools(client):
+    body = client.get("/products/search", params={"query": "lamp"}, headers=AUTH).json()
+    assert body["products"][0]["product_url"] == "https://catalog.example.com/p/HL-001"
+
+
+def test_product_page_escapes_untrusted_catalogue_text():
+    """The CSV is one export, assumed hostile - HTML in a field must not execute."""
+    from app.product_page import render_product
+
+    hostile = {
+        "product_id": "HL-001",
+        "name": "<script>alert(1)</script>",
+        "price_eur": 10.0,
+        "description": "<img src=x onerror=alert(1)>",
+    }
+    html = render_product(hostile, alternatives=None)
+    assert "<script>" not in html
+    assert "<img" not in html
+    assert "&lt;script&gt;" in html

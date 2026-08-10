@@ -66,7 +66,8 @@ data/gift-shop-catalog.csv   152 rows, one export, assumed hostile
    ├─ app/ingest.py          validating pipeline: coerce, quarantine, report
    │                         → in-memory Catalog (no database)
    ├─ app/search.py          pure functions: filter, rank, similar, budget
-   ├─ app/main.py            FastAPI · 5 GET endpoints · bearer auth
+   ├─ app/main.py            FastAPI · 5 tool endpoints (bearer auth) · /p/ product page (public)
+   ├─ app/product_page.py    renders the /p/ page from the same get_product_details data
    └─ app/openapi_compat.py  post-processes the spec into genuine OpenAPI 3.0
 ```
 
@@ -120,9 +121,13 @@ So the loader treats every field as hostile regardless:
 BOM, CRLF, comma-separated tags. It caught two real bugs the clean export never
 would have.
 
-**Two fields the export does not contain: images and product URLs.** Neither is
-invented. They are the first two things I would ask the client for, and their absence
-is why the message design is text-first.
+**The export contains no images or product URLs.** URLs turned out cheap to add for
+real: `/p/{product_id}` is a small, unauthenticated HTML route on this same service
+that renders `get_product_details` for a human instead of a model, so `product_url` is
+computed at request time, not stored, and can never disagree with what the agent already
+said. Images are still cut — a single placeholder repeated across 152 different products
+would read as broken rather than MVP, and inventing distinct photos crosses the same
+line as inventing a price or a policy. First thing I would ask the client for.
 
 ### The tools
 
@@ -198,12 +203,13 @@ reliably.
 will tell a shopper the product is rated zero out of five. Absence is unambiguous in a
 way that `null` and `0` are not.
 
-Two tiers keep list responses small: a **summary** (9 fields, ~45 tokens) for lists,
+Two tiers keep list responses small: a **summary** (10 fields, ~55 tokens) for lists,
 and a **detail** (adds brand, colour, material, tags, occasions, exact stock) only
 when the agent asks about one product. `category` and `subcategory` were cut from the
 summary: once a search has already resolved to a category, repeating it on every
 product buys nothing and only hands the model more raw English catalogue vocabulary
-it might echo instead of translate.
+it might echo instead of translate. `product_url` (a link to the `/p/` page below) is
+the one field computed rather than read straight off the product.
 
 ### Errors the agent can recover from
 
@@ -367,8 +373,7 @@ milliseconds) · write operations, cart and checkout · rate limiting and key ro
 per-user personalisation or memory beyond the conversation · LLM-generated product
 summaries — designed and documented, deliberately not built, because the export's
 descriptions are already short enough and the truncation guard covers the case ·
-images and product URLs, which the export does not contain and which will not be
-invented.
+product images, which the export does not contain and which will not be invented.
 
 ## Time spent
 
