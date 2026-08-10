@@ -339,6 +339,18 @@ def test_product_page_404s_for_unknown_product(client):
     assert "ZZ-999" in response.text
 
 
+def test_product_page_carries_the_chat_widget(client):
+    """A shopper who lands on /p/ from a recommendation must be able to keep talking.
+
+    The landing page is a static file on GitHub Pages and this page is rendered in
+    Python, so the embed lives in two places and drifted - the widget was on the
+    landing page only, and the conversation dead-ended the moment anyone clicked a
+    product link.
+    """
+    for path in ("/p/HL-001", "/p/ZZ-999"):
+        assert "platform.indigo.ai/widget.js" in client.get(path).text, path
+
+
 def test_product_page_is_not_a_tool(spec):
     """Human-facing HTML, not something the model should ever call."""
     assert "/p/{product_id}" not in spec["paths"]

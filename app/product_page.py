@@ -45,6 +45,17 @@ footer{border-top:1px solid var(--card-border);padding:24px 0;text-align:center;
 """
 
 
+# Same embed as web/index.html. The landing page is a static file on GitHub Pages and
+# this page is rendered here, so the two do not share a template - the tag has to be
+# repeated rather than imported, and both copies have to be updated together.
+WIDGET_EMBED = (
+    '<!-- Widget de chat (indigo.ai) - agente "Catalog Service", '
+    'workspace assignment_isaac_chaljub -->\n'
+    '<script defer src="https://platform.indigo.ai/widget.js'
+    '?token=5f1a19fb-2334-4907-b3a6-f87b6f58d205&v=3"></script>'
+)
+
+
 def _page(title: str, body: str) -> str:
     return f"""<!doctype html>
 <html lang="es">
@@ -58,6 +69,7 @@ def _page(title: str, body: str) -> str:
 <header><div class="wrap"><a href="{escape(LANDING_PAGE_URL)}">&larr; Focolare</a></div></header>
 <main><div class="wrap">{body}</div></main>
 <footer>Focolare &mdash; cat&aacute;logo de demostraci&oacute;n para la evaluaci&oacute;n t&eacute;cnica de indigo.ai.</footer>
+{WIDGET_EMBED}
 </body>
 </html>"""
 
