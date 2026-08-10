@@ -41,7 +41,10 @@ class ProductSummary(BaseModel):
     stock_level: StockLevel = Field(
         description="'in_stock' or 'low' can be recommended; 'low' means few remain. "
         "'out_of_stock' cannot be bought right now. 'unknown' means the catalogue "
-        "export did not say - do not claim it is either available or sold out."
+        "export did not say - do not claim it is either available or sold out. Only "
+        "mention this to the shopper when it is not 'in_stock' - 'low' is worth flagging "
+        "as scarcity, 'unknown' needs the caveat above. A plain 'in_stock' needs no "
+        "comment; stating it reads like reciting a database field."
     )
     shipping_days: int | None = Field(
         default=None,
