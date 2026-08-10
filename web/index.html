@@ -307,16 +307,11 @@
 <script defer src="https://platform.indigo.ai/widget.js?token=5f1a19fb-2334-4907-b3a6-f87b6f58d205&v=3"></script>
 
 <script>
-  // El botón de héroe abre el widget si su API está disponible; si no, baja a la
-  // muestra de productos. Ajusta el nombre del método/objeto global una vez pegado
-  // el script Live (suele exponerse como algo tipo `window.Indigo.open()` o similar -
-  // confírmalo en la guía de instalación, el nombre exacto no está verificado aquí).
+  // No hay API JS global documentada para abrir el widget (confirmado: ni en la guía
+  // de personalización avanzada ni en la página en vivo). El botón baja a la muestra
+  // de productos en su lugar.
   document.getElementById('find-gift-btn').addEventListener('click', function () {
-    if (window.Indigo && typeof window.Indigo.open === 'function') {
-      window.Indigo.open();
-    } else {
-      document.getElementById('productos').scrollIntoView({ behavior: 'smooth' });
-    }
+    document.getElementById('productos').scrollIntoView({ behavior: 'smooth' });
   });
 </script>
 
