@@ -66,9 +66,9 @@ class ProductSummary(BaseModel):
     product_url: str | None = Field(
         default=None,
         description="Link to this product's page on our site. Use it to make the "
-        "product's name a link whenever you show one, e.g. [Cuchillo Puntilla de "
-        "9cm](url) instead of plain text - do not add a separate line for it or "
-        "mention the URL in words.",
+        "product's name a plain link whenever you show one - [Cuchillo Puntilla de "
+        "9cm](url), not bold and not a separate line - immediately followed by the "
+        "price on the same line, e.g. '[Cuchillo Puntilla de 9cm](url) — 69 €'.",
     )
     image_url: str | None = Field(
         default=None,
