@@ -37,6 +37,7 @@ main{padding:40px 0 64px}
 dl{display:grid;grid-template-columns:auto 1fr;gap:6px 16px;margin:24px 0;font-size:0.92rem}
 dt{color:var(--text-muted)}
 dd{margin:0}
+.hero-img{width:160px;height:160px;border-radius:14px;display:block;margin:0 0 20px}
 .alts{margin-top:32px}
 .alts a{display:block;padding:10px 0;border-top:1px solid var(--card-border)}
 footer{border-top:1px solid var(--card-border);padding:24px 0;text-align:center;
@@ -93,6 +94,7 @@ def render_product(product: dict[str, Any], alternatives: list[dict[str, Any]] |
     name = escape(product["name"])
     price = f"{product['price_eur']:g} €"
     stock = product.get("stock_level")
+    image = f'<img class="hero-img" src="/p/{escape(product["product_id"])}/image.svg" alt="">'
 
     stock_note = ""
     if stock == "out_of_stock":
@@ -122,6 +124,7 @@ def render_product(product: dict[str, Any], alternatives: list[dict[str, Any]] |
             alt_html = f'<div class="alts"><h2>Alternativas disponibles</h2>{links}</div>'
 
     body = f"""
+{image}
 <h1>{name}</h1>
 <p class="price">{price}</p>
 {stock_note}

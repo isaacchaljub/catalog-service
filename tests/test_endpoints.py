@@ -407,5 +407,5 @@ def test_product_page_escapes_untrusted_catalogue_text():
     }
     html = render_product(hostile, alternatives=None)
     assert "<script>" not in html
-    assert "<img" not in html
+    assert "<img src=x" not in html  # the hostile one; the page's own hero <img> is fine
     assert "&lt;script&gt;" in html
