@@ -95,6 +95,75 @@ def test_nothing_suitable_is_said_plainly(catalog):
     assert result["suggestions"]["relax"]
 
 
+def test_query_matches_across_word_endings(catalog):
+    """Regression: `bake` returned no_match while `baking` found the Bread Baking Set.
+
+    Seen live - the agent searched "bake" for a shopper asking about repostería,
+    got nothing back and apologised for a product we stock at 72 €.
+    """
+    for query in ("bake", "baking", "baked"):
+        result = search.search_products(catalog, query=query, category="Kitchen & Dining")
+        assert result["status"] == "ok", f"{query!r} found nothing"
+        assert "Bread Baking Set" in [p["name"] for p in result["products"]]
+
+
+def test_exact_word_still_outranks_a_stem_only_match(catalog):
+    """Stemming widens the net; it must not reorder what was already correct."""
+    result = search.search_products(catalog, query="knife", category="Kitchen & Dining")
+    assert [p["name"] for p in result["products"]][:2] == [
+        "Chef's Knife 20cm",
+        "Paring Knife 9cm",
+    ]
+
+
+def test_stemming_only_merges_real_word_families(catalog):
+    """The guard rail for `stem()`: unrelated words must not collapse together.
+
+    Asserting "every word starts with its stem" would be vacuous - `stem` only
+    ever strips from the end. So this pins named pairs in both directions, then
+    checks the shape of the families the rules actually produce over the real
+    catalogue. That is what lets the stemmer stay a few suffix rules rather than
+    a dependency.
+    """
+    from app.ingest import stem
+
+    same_family = [
+        ("bake", "baking"), ("bake", "baked"), ("cook", "cooking"),
+        ("candle", "candles"), ("knife", "knives"), ("glass", "glasses"),
+        ("dish", "dishes"), ("run", "running"), ("box", "boxes"),
+    ]
+    for first, second in same_family:
+        assert stem(first) == stem(second), f"{first}/{second} should share a stem"
+
+    # Near-miss pairs an over-eager rule would wrongly fuse.
+    unrelated = [
+        ("bread", "breeze"), ("speed", "spend"), ("glass", "glaze"),
+        ("ring", "rinse"), ("card", "care"), ("board", "boar"),
+    ]
+    for first, second in unrelated:
+        assert stem(first) != stem(second), f"{first}/{second} must not collapse"
+
+    vocabulary = {token for product in catalog.products for token in product.tokens}
+    families: dict[str, set[str]] = {}
+    for word in vocabulary:
+        families.setdefault(stem(word), set()).add(word)
+
+    for root, words in families.items():
+        # A word that was already short is not the stemmer's doing; what must
+        # never happen is *stemming* cutting one down to a promiscuous key.
+        for word in words:
+            if stem(word) != word:
+                assert len(root) >= 3, f"{word!r} was cut down to {root!r}"
+        # The largest real family in this catalogue is size/sized/sizes/sizing.
+        assert len(words) <= 4, f"stem {root!r} swallowed {sorted(words)}"
+
+
+def test_unknown_nonsense_still_returns_no_match(catalog):
+    """Stemming must not turn a genuine miss into a false hit."""
+    result = search.search_products(catalog, query="scuba diving regulator")
+    assert result["status"] == "no_match"
+
+
 def test_unknown_category_suggests_a_real_one(catalog):
     result = search.search_products(catalog, category="homeware")
     # 'homeware' is close enough to resolve outright; a wilder guess must not.

@@ -15,7 +15,7 @@ import json
 from typing import Any
 
 from app import errors
-from app.ingest import Catalog, Product, category_key, slugify, tokenize
+from app.ingest import Catalog, Product, category_key, slugify, stems, tokenize
 
 # --- Limits --------------------------------------------------------------------
 
@@ -111,6 +111,7 @@ def resolve_category(catalog: Catalog, requested: str) -> str | None:
 def score_product(
     product: Product,
     query_tokens: set[str],
+    query_stems: set[str],
     *,
     occasion: str | None,
     recipient: str | None,
@@ -122,6 +123,11 @@ def score_product(
         score += 3.0 * len(query_tokens & product.name_tokens)
         score += 2.0 * len(query_tokens & product.tag_tokens)
         score += 1.0 * len(query_tokens & product.tokens)
+        # A morphological match still counts, but the literal word always wins:
+        # an exact hit scores on both tiers, a stem-only hit on this one alone.
+        score += 1.5 * len(query_stems & product.name_stems)
+        score += 1.0 * len(query_stems & product.tag_stems)
+        score += 0.5 * len(query_stems & product.stem_tokens)
 
     if occasion and occasion in product.occasions:
         score += 2.0
@@ -247,6 +253,7 @@ def search_products(
         filters["category"] = resolved_category
 
     query_tokens = tokenize(query) if query else set()
+    query_stems = stems(query_tokens)
 
     # Stage the filters so an empty result can explain *which* one emptied it.
     by_attributes = [
@@ -255,7 +262,7 @@ def search_products(
         if (not resolved_category or p.category == resolved_category)
         and (not occasion or occasion in p.occasions)
         and (not recipient or p.recipient == recipient)
-        and (not query_tokens or (query_tokens & p.tokens))
+        and (not query_tokens or (query_tokens & p.tokens) or (query_stems & p.stem_tokens))
     ]
     by_price = [
         p
@@ -286,6 +293,7 @@ def search_products(
         p.product_id: score_product(
             p,
             query_tokens,
+            query_stems,
             occasion=occasion,
             recipient=recipient,
             max_price_eur=max_price_eur,

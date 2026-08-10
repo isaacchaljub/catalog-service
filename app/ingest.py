@@ -65,6 +65,16 @@ _ODD_SPACE = re.compile("[\u00a0\u1680\u2000-\u200b\u202f\u205f\u3000\ufeff]")
 _WHITESPACE = re.compile(r"\s+")
 _SPACE_BEFORE_PUNCT = re.compile(r"\s+([.,;:!?])")
 _TOKEN = re.compile(r"[a-z0-9]+")
+_VOWELS = frozenset("aeiouy")
+# Longest first, so `dishes` loses `es` rather than `s`.
+_SUFFIXES = ("ing", "ed", "es", "s")
+# Plurals no suffix rule reaches. `knives` matters - it is a subcategory name.
+_IRREGULAR_PLURALS = {
+    "knives": "knife",
+    "leaves": "leaf",
+    "shelves": "shelf",
+    "children": "child",
+}
 _CURRENCY = re.compile(r"(?i)(eur|euros?|€|\$|£)")
 
 
@@ -155,6 +165,9 @@ class Product:
     tokens: frozenset[str] = frozenset()
     name_tokens: frozenset[str] = frozenset()
     tag_tokens: frozenset[str] = frozenset()
+    stem_tokens: frozenset[str] = frozenset()
+    name_stems: frozenset[str] = frozenset()
+    tag_stems: frozenset[str] = frozenset()
 
 
 @dataclass
@@ -220,6 +233,37 @@ def slugify(text: str) -> str:
 
 def tokenize(text: str) -> set[str]:
     return {t for t in _TOKEN.findall(text.lower()) if t not in STOPWORDS and len(t) > 1}
+
+
+def stem(token: str) -> str:
+    """Fold everyday English variants onto one key, so `bake` finds `baking`.
+
+    An agent picks whichever surface form the shopper's phrasing suggests, and
+    exact token matching made that a coin flip - `baking` hit the Bread Baking
+    Set, `bake` returned no_match and the assistant apologised for a product we
+    stock. This is deliberately not a full Porter stemmer: the catalogue is 139
+    curated products, and `test_stemming_only_merges_real_word_families` is what
+    keeps it honest by asserting every group it folds is a genuine family.
+    """
+    base = _IRREGULAR_PLURALS.get(token)
+    if base is None:
+        base = token
+        for suffix in _SUFFIXES:
+            if base.endswith(suffix) and len(base) - len(suffix) >= 3:
+                # `glass` is not a plural of `glas`.
+                if suffix == "s" and base.endswith("ss"):
+                    break
+                base = base[: -len(suffix)]
+                break
+    if len(base) > 3 and base[-1] == base[-2] and base[-1] not in _VOWELS:
+        base = base[:-1]  # `running` -> `runn` -> `run`
+    if len(base) > 3 and base.endswith("e"):
+        base = base[:-1]  # drop the silent `e` so `bake` and `baking` both land on `bak`
+    return base
+
+
+def stems(tokens: Iterable[str]) -> set[str]:
+    return {stem(t) for t in tokens}
 
 
 def normalize_product_id(value: Any) -> str:
@@ -655,6 +699,9 @@ def _index_product(product: Product) -> None:
             )
         )
     )
+    product.stem_tokens = frozenset(stems(product.tokens))
+    product.name_stems = frozenset(stems(product.name_tokens))
+    product.tag_stems = frozenset(stems(product.tag_tokens))
     if product.rating is not None:
         product.popularity = product.rating * math.log10((product.reviews_count or 0) + 10)
 
