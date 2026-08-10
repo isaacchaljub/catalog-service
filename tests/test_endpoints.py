@@ -355,6 +355,46 @@ def test_product_url_is_returned_from_the_tools(client):
     assert body["products"][0]["product_url"] == "https://catalog.example.com/p/HL-001"
 
 
+# --- The /p/.../image.svg placeholder -------------------------------------------
+
+
+def test_placeholder_image_needs_no_auth(client):
+    response = client.get("/p/HL-001/image.svg")
+    assert response.status_code == 200
+    assert response.headers["content-type"].startswith("image/svg+xml")
+    assert "<svg" in response.text
+
+
+def test_placeholder_image_404s_for_unknown_product(client):
+    assert client.get("/p/ZZ-999/image.svg").status_code == 404
+
+
+def test_placeholder_image_is_not_a_tool(spec):
+    assert "/p/{product_id}/image.svg" not in spec["paths"]
+
+
+def test_two_different_categories_get_different_placeholder_colours(client):
+    """The whole point: two products in one reply must not look identical."""
+    lamp = client.get("/p/HL-001/image.svg").text  # Home & Living
+    knife = client.get("/p/KD-001/image.svg").text  # Kitchen & Dining
+    assert lamp != knife
+
+
+def test_image_url_is_returned_from_the_tools(client):
+    body = client.get("/products/search", params={"query": "lamp"}, headers=AUTH).json()
+    assert body["products"][0]["image_url"] == "https://catalog.example.com/p/HL-001/image.svg"
+
+
+def test_placeholder_image_escapes_untrusted_catalogue_text():
+    """Same 'assumed hostile' export - an unescaped '&' would also break the SVG's XML."""
+    from app.placeholder_image import render
+
+    svg = render("<script>alert(1)</script> & Co", "Home & Living")
+    assert "<script>" not in svg
+    assert "&lt;script&gt;" in svg
+    assert " & " not in svg  # bare & is invalid inside SVG text content
+
+
 def test_product_page_escapes_untrusted_catalogue_text():
     """The CSV is one export, assumed hostile - HTML in a field must not execute."""
     from app.product_page import render_product

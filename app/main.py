@@ -17,9 +17,9 @@ from typing import Annotated, Any, Literal
 
 from fastapi import APIRouter, Depends, FastAPI, Path, Query, Request
 from fastapi.exceptions import RequestValidationError
-from fastapi.responses import HTMLResponse, JSONResponse
+from fastapi.responses import HTMLResponse, JSONResponse, Response
 
-from app import auth, product_page, search
+from app import auth, placeholder_image, product_page, search
 from app.config import APP_NAME, APP_VERSION, Settings, require_api_token
 from app.ingest import Catalog, load_catalog
 from app.openapi_compat import (
@@ -185,6 +185,18 @@ async def product_detail_page(product_id: str) -> HTMLResponse:
     return HTMLResponse(
         product_page.render_product(payload["product"], payload.get("alternatives"))
     )
+
+
+@app.get("/p/{product_id}/image.svg", include_in_schema=False)
+async def product_placeholder_image(product_id: str) -> Response:
+    """Generated placeholder art behind `image_url`. Not a tool, no auth - an <img>
+    or a markdown image reference fetches this directly.
+    """
+    product = get_catalog().get(product_id)
+    if product is None:
+        return Response(status_code=404)
+    svg = placeholder_image.render(product.name, product.category)
+    return Response(content=svg, media_type="image/svg+xml")
 
 
 tools = APIRouter(dependencies=[Depends(auth.verify_bearer)], tags=["catalog"])

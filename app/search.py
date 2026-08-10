@@ -59,6 +59,7 @@ def to_summary(product: Product, *, base_url: str | None = None) -> dict[str, An
             "rating": product.rating,
             "reviews_count": product.reviews_count,
             "product_url": f"{base_url}/p/{product.product_id}" if base_url else None,
+            "image_url": f"{base_url}/p/{product.product_id}/image.svg" if base_url else None,
         }
     )
 

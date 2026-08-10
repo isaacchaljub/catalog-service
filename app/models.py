@@ -69,6 +69,12 @@ class ProductSummary(BaseModel):
         "it if the shopper wants to see more, compare options themselves, or asks for a "
         "link - do not read it aloud.",
     )
+    image_url: str | None = Field(
+        default=None,
+        description="Illustrative image for this product - a generated placeholder, not "
+        "a photo. Embed it in your reply as a markdown image, ![name](url), for each "
+        "product you recommend; do not describe it in words or claim it is a real photo.",
+    )
 
 
 class ProductDetail(ProductSummary):
