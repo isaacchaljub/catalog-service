@@ -65,10 +65,11 @@ class ProductSummary(BaseModel):
     )
     product_url: str | None = Field(
         default=None,
-        description="Link to this product's page on our site. Use it to make the "
-        "product's name a plain link whenever you show one - [Cuchillo Puntilla de "
-        "9cm](url), not bold and not a separate line - immediately followed by the "
-        "price on the same line, e.g. '[Cuchillo Puntilla de 9cm](url) — 69 €'.",
+        description="Link to this product's page on our site, with full details. Only "
+        "share it if the shopper asks to see more or asks for a link - write it as "
+        "plain text (https://...), never as markdown link syntax with the name in "
+        "brackets, e.g. '[name](url)' - that has been observed to make the widget "
+        "drop the name entirely. Never read it aloud.",
     )
     image_url: str | None = Field(
         default=None,

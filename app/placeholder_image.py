@@ -38,6 +38,23 @@ _CATEGORY_COLORS = {
     "Experiences": "#A2452F",
 }
 _DEFAULT_COLOR = "#8A7B6C"
+
+# Spanish label for the category name printed on the image itself. Separate from
+# app.vocab_es because this is a UI label for a fixed set of 11 categories, not a
+# glossary derived from free-text catalogue values.
+_CATEGORY_ES = {
+    "Home & Living": "Hogar",
+    "Tech & Gadgets": "Tecnología",
+    "Kitchen & Dining": "Cocina",
+    "Beauty & Wellness": "Belleza y Bienestar",
+    "Books & Stationery": "Libros y Papelería",
+    "Games & Puzzles": "Juegos y Puzles",
+    "Outdoor & Travel": "Aire Libre y Viajes",
+    "Jewellery": "Joyería",
+    "Kids": "Niños",
+    "Pets": "Mascotas",
+    "Experiences": "Experiencias",
+}
 _CREAM = "#FBF4EC"
 
 # Each icon is drawn on a 24x24 grid. `{c}` is the icon colour (cream, matching the
@@ -127,7 +144,7 @@ _DEFAULT_ICON = """
 def render(name: str, category: str | None) -> str:
     color = _CATEGORY_COLORS.get(category or "", _DEFAULT_COLOR)
     icon = _ICONS.get(category or "", _DEFAULT_ICON).format(c=_CREAM, bg=color)
-    label = escape(category or "Focolare")
+    label = escape(_CATEGORY_ES.get(category or "", category or "Focolare"))
 
     # Markdown image syntax carries no size attribute, so the SVG's own aspect ratio
     # is the only lever over display size in a chat reply - a 1:1 square scales to
