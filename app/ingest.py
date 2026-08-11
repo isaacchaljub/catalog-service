@@ -30,7 +30,7 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any, Iterable
 
-from app.vocab_es import translate_color, translate_material
+from app.vocab_es import search_terms_es, translate_color, translate_material
 
 log = logging.getLogger(__name__)
 
@@ -721,8 +721,18 @@ def _index_product(product: Product) -> None:
         tokenize(" ".join(filter(None, [product.name, product.name_es])))
     )
     product.tag_tokens = frozenset(
-        tokenize(" ".join(product.tags + ([product.subcategory] if product.subcategory else [])))
+        tokenize(
+            " ".join(
+                product.tags
+                + ([product.subcategory] if product.subcategory else [])
+                + [search_terms_es(product.category, product.subcategory)]
+            )
+        )
     )
+    # `tokens` is the gate: search_products only considers a product whose `tokens`
+    # or `stem_tokens` intersect the query, and *then* scores the finer-grained
+    # fields. So anything indexed into `name_tokens` or `tag_tokens` must appear
+    # here too, or it can raise a product's score without ever letting it qualify.
     product.tokens = frozenset(
         tokenize(
             " ".join(
@@ -733,6 +743,7 @@ def _index_product(product: Product) -> None:
                         product.description, " ".join(product.tags), " ".join(product.occasions),
                         product.name_es, product.description_es,
                         product.color_es, product.material_es,
+                        search_terms_es(product.category, product.subcategory),
                     ],
                 )
             )

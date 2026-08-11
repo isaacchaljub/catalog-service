@@ -71,7 +71,7 @@ Run it locally:
 ```bash
 uv sync --dev
 cp .env.example .env                # then set CATALOG_API_TOKEN
-uv run pytest                       # 167 tests
+uv run pytest                       # 170 tests
 uv run uvicorn app.main:app --reload --port 8080
 ```
 
@@ -388,7 +388,7 @@ gate, one layer further in.
 ### Tests
 
 ```bash
-uv run pytest        # 167 tests
+uv run pytest        # 170 tests
 ```
 
 | File | Covers |
@@ -405,22 +405,118 @@ than by eye. That is a direct consequence of a mistake — see below.
 
 ## Conversation design
 
-> <!-- TODO(Sonnet): fill in once the Agent Block sections are final. -->
-> <!-- Required by the brief: the prompt as written, how the tools were bound, and -->
-> <!-- especially how many questions it asks before recommending, and why. -->
-> <!-- The prompt sections are in HANDOFF.md §3. -->
+### How the tools are bound to the agent
 
-**Question budget: at most two before the first recommendation, and none at all if the
-shopper has already given a constraint.** "A chef's knife under a hundred euros" gets
-knives, not a questionnaire. "I need a gift" gets one question that does the most work
-— who it is for and what the occasion is, in a single sentence. Refining after a
-recommendation is cheap and welcome; interrogating before one is why people leave.
+No workflow. indigo.ai makes agents mandatory and workflows optional, and a shop
+assistant is one agent with five tools — a drag-and-drop conversational graph would
+have added a maintenance surface without adding a behaviour.
 
-**Message format**, designed against the platform's own Card Block limits (title 55
-characters, description 85) so it fits a narrow column whether rendered as text or as
-cards: two products per message, three only when comparing; name and price, one line
-of why tied to what the shopper said, one line of logistics; under about 80 words;
-no tables, no nested bullets; exactly one next step.
+**REST binding.** Agent settings → Tools settings → *Create Custom Tool Collection*.
+The `SCHEMA` box takes the OpenAPI document pasted as text — it is a JSON editor, not
+a URL fetcher, so every spec change means re-pasting. The endpoints, methods and
+parameters are derived from the spec rather than typed in, which is why the spec is
+treated as prompt surface throughout this build: **what goes in that box becomes the
+tool definitions the model reads.** Auth is one HEADERS row, `Authorization`, with the
+value built from an inline secret so the token never sits in the workspace as
+plaintext. The assembled header must come out as exactly `Bearer <token>`; getting the
+`Bearer ` prefix on the wrong side of the secret boundary produces a uniform 401 that
+looks like a broken service rather than a config error. Then in the Agent Block's
+Tools section, each of the five operations is added individually.
+
+**MCP binding** is the alternative path to the same five operations: Integrations →
+Add MCP Server, with the **bare service URL** — the platform appends the transport
+path itself, so `https://…run.app`, never `…/mcp`. Both bindings were built and both
+work; the transport is the client's choice, not a fork in the code.
+
+Multi-tool orchestration is the platform's job, not ours. It calls tools in parallel
+when they are independent and sequentially when one depends on another, which is what
+makes `get_product_details` → `find_similar_products` chain without a workflow — and
+what justifies five focused tools instead of one fat endpoint.
+
+### The prompt
+
+Four sections in the Agent Block. Instructions are in English; **the conversation
+examples are in Spanish**, because the examples are what actually teach the output
+format and the model keys off them.
+
+**Tone of Voice** sets the register and the column width — *"a good shop assistant,
+not a brochure"*, short sentences, at most one emoji per conversation. It bans
+headings, tables and nested bullets outright, because the widget is a narrow column
+usually on a phone. It also carries two rules that exist only because the widget
+misbehaved without them: each product is one block with no blank lines inside it and
+a `---` between products (a blank line alone renders as no separation), and product
+names are spoken in the shopper's language every time — *"cuchillo puntilla de 9cm"*,
+not `Paring Knife 9cm` — with the single exception of names that are themselves
+English titles, such as books.
+
+**Brand Rules** is the honesty section. Never invent a product, price, stock level,
+delivery time or policy; everything factual must come from a tool response *in this
+conversation*. It names what we do not have — returns policy, delivery guarantees,
+discount codes, opening hours, a physical shop — so the model declines from a list
+rather than improvising. A hard budget is hard: *"under 70"* never quietly becomes 82.
+When a tool returns a non-`ok` status, read `message`, `suggestions` and `notes` and
+act on them before saying "we have nothing". And **never claim the catalogue lacks
+something without having called `search_products` for it** — that rule was added after
+the agent answered a yoga question by reasoning over the eleven category names,
+concluded there was no yoga shelf, and told a shopper we had nothing, while the
+service was returning a cork yoga mat for that exact query. The category list
+describes how the shop is organised, not what it contains.
+
+**Conversation Examples** carry the six scenarios from the brief in Spanish, with real
+prices and availability. Examples are the lever for anything the model will not do
+unprompted: it defaulted to offering a plain link to a product page until an example
+showed `![name](url)`, after which it embedded images reliably.
+
+**Company Description** is the shop's own framing, kept short.
+
+### How many questions before recommending, and why
+
+**At most two before the first recommendation, and none at all if the shopper has
+already given a constraint.** "A chef's knife under a hundred euros" gets knives, not
+a questionnaire. "I need a gift" gets one question that does the most work — who it is
+for and what the occasion is, in a single sentence — then recommendations, then
+refinement.
+
+The reasoning is asymmetric cost. Refining after a recommendation is cheap: the
+shopper has something concrete to react to, and "cheaper" or "she is not really a
+cook" is easier to say than to volunteer cold. Interrogating before one is expensive:
+every question is a turn where the shopper has received nothing, and it is where
+people leave. A wrong first recommendation is recoverable in one turn; a
+questionnaire is not recoverable at all.
+
+The budget also has to survive a real tension. A reason tied to the shopper — *"in
+your budget, ships in two days, suits someone who has just moved"* — is what separates
+a recommendation from a search result, and on turn one there may be nothing to tie it
+to. The resolution is not to ask more questions but to **say what is being assumed**,
+and to lead with the trade-off when the honest answer is a spread rather than a pick.
+
+### Message format
+
+Designed against the platform's own Card Block limits (title 55 characters,
+description 85) so it fits a narrow column whether rendered as text or as cards: two
+products per message, three only when comparing; name and price, one line of why tied
+to what the shopper said, one line of logistics; under about 80 words; no tables, no
+nested bullets; exactly one next step.
+
+**Two products, not one.** With a single product there is nothing the choice is
+*against*, and the "why" line degrades into a product blurb — a sentence that would be
+identical for every shopper who asked. The contrast is what makes a reason possible.
+
+### The prompt is not the only place behaviour lives
+
+Every list-returning tool ships a `notes` field, and non-`ok` responses ship
+`suggestions` as well. That is deliberate: **per-state instructions belong in the
+response that created the state**, not in a prompt that has to anticipate all of them
+in advance. `get_product_details` on an out-of-stock product returns the alternatives
+*and* a note to state the unavailability before pivoting, in one round trip.
+
+This is sharp enough to cut. `find_similar_products` used to tell the model *"say what
+makes each one a comparable choice"* — good advice attached to a candidate list that
+had not been verified as comparable, which read as *justify whatever I hand you*. Fed
+a bath towel set as an alternative to a yoga mat, the agent duly informed a shopper
+the towels were "ideales para llevar a clase". The ranking was fixed so the list is
+honest, and the note now asks for the trade-off *or* a plain statement that something
+is a different kind of thing.
 
 ---
 
@@ -512,6 +608,6 @@ app/
 data/                  the catalogue export
 web/index.html         the landing page (GitHub Pages), widget embedded
 scripts/               export_openapi.py — regenerates the committed spec
-tests/                 167 tests, including a fixture of deliberately broken CSV
+tests/                 170 tests, including a fixture of deliberately broken CSV
 openapi.json           generated snapshot; a test fails if it drifts from the service
 ```

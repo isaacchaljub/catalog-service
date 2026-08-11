@@ -174,6 +174,90 @@ MATERIAL_WORD_ES: dict[str, str] = {
 }
 
 
+# The taxonomy is never translated in the export, and it is the one part of a product
+# that says what *kind* of thing it is. Indexing only the English label meant a shopper
+# searching the Spanish name of a whole shelf found nothing: "juegos de mesa" is what
+# every Spanish speaker calls the Board Games subcategory, and it matched only literal
+# tables, because no product name contains the word "mesa".
+#
+# These are search terms, not display strings - several entries carry more than one
+# word because shoppers do not all reach for the same one ("sueño" and "dormir" are
+# the same shelf). Values are indexed, never shown. Accents are folded at tokenise
+# time, so they are written naturally here.
+#
+# Deliberately NOT giving Kitchen & Dining the word "mesa": it would make "juegos de
+# mesa" match cookware again, which is the exact bug this fixes.
+SEARCH_TERMS_ES: dict[str, str] = {
+    # Categories
+    "beauty & wellness": "belleza bienestar",
+    "books & stationery": "libros papelería",
+    "experiences": "experiencias",
+    "games & puzzles": "juegos rompecabezas",
+    "home & living": "hogar casa",
+    "jewellery": "joyería",
+    "kids": "niños infantil",
+    "kitchen & dining": "cocina comedor",
+    "outdoor & travel": "aire libre viaje",
+    "pets": "mascotas",
+    "tech & gadgets": "tecnología gadgets",
+    # Subcategories
+    "audio": "audio altavoces auriculares",
+    "bags": "bolsos mochilas",
+    "bar": "coctelería bar",
+    "bath": "baño",
+    "board games": "juegos de mesa",
+    "books": "libros",
+    "bracelets": "pulseras",
+    "candles": "velas",
+    "cats": "gatos",
+    "classic games": "juegos clásicos",
+    "coffee": "café",
+    "cookware": "ollas sartenes utensilios",
+    "craft": "manualidades",
+    "creative": "creativo",
+    "decor": "decoración",
+    "desk": "escritorio oficina",
+    "dogs": "perros",
+    "drinkware": "botellas tazas vasos",
+    "earrings": "pendientes",
+    "fitness": "fitness ejercicio deporte",
+    "fragrance": "fragancia perfume",
+    "garden": "jardín",
+    "gift cards": "tarjetas regalo",
+    "grooming": "aseo afeitado",
+    "home tech": "domótica hogar",
+    "knives": "cuchillos",
+    "lighting": "iluminación lámparas",
+    "mobile": "móvil teléfono",
+    "necklaces": "collares",
+    "outdoor": "aire libre camping",
+    "paper": "papel cuadernos",
+    "pens": "bolígrafos plumas",
+    "photo": "fotografía cámara",
+    "puzzles": "rompecabezas puzzles",
+    "reading": "lectura ebook",
+    "recovery": "recuperación masaje",
+    "rings": "anillos",
+    "serving": "servir bandejas",
+    "skincare": "cuidado piel facial",
+    "sleep": "sueño dormir descanso",
+    "storage": "almacenaje organización",
+    "tableware": "vajilla",
+    "tea": "té infusiones",
+    "textiles": "textiles mantas",
+    "toys": "juguetes",
+    "vases": "jarrones",
+    "watches": "relojes",
+    "wearable": "wearable actividad",
+}
+
+
+def search_terms_es(*values: str | None) -> str:
+    """Spanish search words for English taxonomy labels. Unknown labels contribute
+    nothing rather than a guess - the same contract as the colour glossary."""
+    return " ".join(SEARCH_TERMS_ES.get(v.casefold(), "") for v in values if v)
+
+
 def translate_color(value: str | None) -> str | None:
     if not value:
         return None

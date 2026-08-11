@@ -354,6 +354,36 @@ def test_spanish_stopword_no_longer_ranks_the_perfume(catalog_es):
         assert "BW-009" not in ids, f"perfume still leaking into {query!r}"
 
 
+def test_spanish_shelf_names_find_the_shelf(catalog_es):
+    """The taxonomy is never translated in the export, so it is indexed separately.
+
+    `juegos de mesa` is what the Board Games subcategory is called in Spanish, and
+    no product name contains the word `mesa` - it matched only literal tables.
+    """
+    result = search.search_products(catalog_es, query="juegos de mesa")
+    assert result["products"][0]["product_id"] == "GP-001"
+
+    ids = {p["product_id"] for p in result["products"]}
+    assert not any(i.startswith("KD-") for i in ids), "cookware is not a board game"
+
+
+def test_spanish_intent_reaches_the_right_shelf(catalog_es):
+    """`dormir` is the Sleep subcategory. Nothing in those products says it."""
+    result = search.search_products(catalog_es, query="algo para dormir mejor")
+    assert {p["product_id"] for p in result["products"][:2]} == {"BW-001", "BW-002"}
+
+
+def test_every_scoring_index_is_a_subset_of_the_matching_gate(catalog_es):
+    """search_products gates on `tokens`, then scores `name_tokens`/`tag_tokens`.
+
+    A term added to the finer indexes but not to the gate raises a product's score
+    without letting it qualify - it scores 3.0 and is never considered.
+    """
+    for product in catalog_es.products:
+        assert product.tag_tokens <= product.tokens, product.product_id
+        assert product.name_tokens <= product.tokens, product.product_id
+
+
 def test_spanish_query_for_an_unavailable_product_is_honest(catalog_es):
     result = search.search_products(catalog_es, query="esterilla de acupresion")
     assert result["reason"] == "out_of_stock_only"
