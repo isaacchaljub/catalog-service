@@ -615,7 +615,7 @@ reports "0 rules left". This is a better constraint than it first appears: it fo
 every rule to justify its slot against the others, so the list ends up describing
 failures that actually occurred rather than every precaution one can imagine. It also
 means late discoveries cannot simply be appended, which is an argument for pushing
-per-state guidance into the tool responses instead — see below.
+per-state guidance into the tool responses instead.
 
 **Agents are invisible without a trigger.** Without one, messages fall through to the
 platform's toolless General Agent, which answers fluently and entirely from
