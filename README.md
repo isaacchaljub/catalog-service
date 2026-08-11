@@ -16,24 +16,39 @@ the client's choice rather than a fork in the code.
 
 ## Part 1 — How I work with AI
 
-> <!-- TODO(Isaac): these three are yours to write. Keep the whole section to one page. -->
-> <!-- Brief and honest beats polished — that is what they asked for. -->
-> <!-- STUDY-GUIDE.md §3.2 has a genuine, usable answer for question 2 if you want it: -->
-> <!-- the info.title bug, where a generic error message got re-interpreted three times -->
-> <!-- instead of running a validator. It is a real story about building something a -->
-> <!-- model consumes, which is exactly what the question asks for. -->
-
 ### My workflow
 
-_TODO_
+They way I work with AI tools is pretty standardized regardless of the end goal; what does change is the depth I go into or the time put into
+the planning stage of my workflow, but it remains the same. Whenever I am going to start working on something, the first thing I do is collect information
+on what I will be doing (from conversations, problems I identified, a Spec, or simply an idea left in backlog) so that I can have a clear idea of what the
+final deliverable will be. 
+
+Once this is done and I have the necessary information to start, I then enter plan mode with AI. I do this by setting off a brainstorming session in which
+I explain in lengthy detail what I want to do, what inputs and parameters I have, what outputs I expect, architectural decisions and requirements, things to 
+check along the development path, and anything else I feel is important, and then let the agent (usually Opus from Claude) read everything and come up with
+blindspots in my plan; alternatives to my proposed points; summary of which decisions make sense and which don't, and why; and I go over its list to be able
+to answer back with my own personal comments, doubts, clarification points, technical decisions that don't match the business needs, an anything else that 
+is relevant to the design. Once I'm happy with the state of the plan I then have Claude write a PLAN.md file that serves as the base for the development 
+thereinafter. I go over the plan to re-check any drift from what I had in mind and when all is in place, I then switch to build mode.
+
+Build mode is basically Claude running in auto mode (Sonnet for simple tasks, Opus if some part of the build requires deeper care) defined steps of the plan,
+which I then check to make sure things are working as intended and that it looks good, as it's easier to review 4 files and a new feature rather than 25 files
+and all features at the same time. In this stage is where problems always arise and the plan needs to adapt and evolve, but keeping the end goal as the North
+star at project's end. Also in this stage is where I usually come up with new ideas and ways to improve what I first design, so it's both a build + plan iterative stage.
+
+Once the build completes I use Claude once more to stress-test the product to find any cracks or edge cases we may come up with, and once it's behaving as intended and everything is in place I ship the final product.
 
 ### When it went wrong
 
-_TODO_
+The most recent example was at Duckbill, with one of the hardest projects I tackled: Personal Information Extraction from unstructured chats. A profile extraction pipeline I built had Opus doing the extraction and Sonnet verifying it, so no human in the loop here. The changes I made were supposed to drop the slop rate, and the evals numbers said they did, but I kept manually running into bad records that had passed verification. That mismatch is what told me something was off, and when I checked the drift between the evals result and what I was seeing in Prod I notices that Sonnet wasn't actually catching Opus's mistakes, it was just missing the same things, since they're close enough in training and lab to share blind spots.
+
+What I do differently now: verification needs to come from an actually independent model, not just a different size of the same one, so I moved that step to GPT-5.5. And more broadly, I stopped assuming a decision was fine just because it seemed to be running and working. I check any decision point I didn't personally make, so I know where the pipeline can actually break instead of hoping it doesn't. I get the AI Agent to give me a list of decision points it took to evaluate possible drift points.
 
 ### In the room
 
-_TODO_
+Dealing with stakeholders wanting something done differently is an inherent part of the job and life itself. The way I've always dealt with this is by opening a good communication channel with the person in the room. Once I do this, I go over their perspective and their points and understand their complaints and why they think my proposal was incorrect, always making sure I'm getting it from the client's own perspective. Once this is settled I review their arguments and identify which ones are genuinely good and worth changing, which ones I think we could compromise on, and which ones I feel are wrong and why I feel that way, and start the second part of the communcation channel in which I present this to them.
+
+The idea here is to be able to have a professional discussion on point in which I will cede, points in which I feel I'm right, and points in which I want to talk about more in depth to see how we could reach common ground. Sometimes a client will be impossible to convince otherwise and will just want everything as they say, in which case I don't lose temper or time arguing and just evaluate if what they want is feasible and change it. This is however my last resort, as I've found that an honest conversation tends to be productive from and for both sides.
 
 ---
 
@@ -414,15 +429,6 @@ no tables, no nested bullets; exactly one next step.
 Genuine integration findings, since they cost real time and would cost the next
 person the same:
 
-**The importer accepts specifications its own model runtime rejects.** The tool
-collection validated a document containing `allOf`; the configured Gemini model then
-failed to build function declarations from it and the agent errored before making any
-HTTP call. OpenAPI 3.0 forbids sibling keys next to `$ref`, so nullable references
-*must* be wrapped in `allOf` — and the function-calling runtime rejects exactly that.
-The two consumers have contradictory requirements. **Resolution: importer conformance
-wins, and the model gets swapped.** A specification that will not import is worth
-nothing; a model that dislikes `allOf` can be changed in one click.
-
 **The importer inlines every `$ref`**, so schema reuse multiplies rather than saves —
 one schema referenced five times became twenty inlined copies and 72 KB. Collapsing
 the deep recovery-payload schemas halved it.
@@ -475,20 +481,17 @@ careful; it is `test_spec_is_valid_openapi`.
 
 Vector search and embeddings (152 products) · a database (read-only, loads in
 milliseconds) · write operations, cart and checkout · rate limiting and key rotation ·
-per-user personalisation or memory beyond the conversation · LLM-generated product
+per-user personalization or memory beyond the conversation · LLM-generated product
 summaries — designed and documented, deliberately not built, because the export's
 descriptions are already short enough and the truncation guard covers the case ·
 real product photography, which the export does not contain and which will not be
 invented — `image_url` is a generated placeholder, not a substitute for it.
 
+The decision to leave these out stems from the fact that the current state of the inventory is simple enough to not need building them, a matter of keeping things simple unless needed. If volume of SKUs rocketed above 10.000 then it makes sense to enable vector databases, RDBs and the rest of the architecture around it, but for 152 I went with KISS
+
 ## Time spent
 
-> <!-- TODO(Isaac): the brief asks roughly how long, and what you left out. -->
-> <!-- Day 1 was roughly N hours, of which a large share went on the platform -->
-> <!-- integration rather than the service. Worth saying plainly — it is the honest -->
-> <!-- shape of forward-deployed work. -->
-
-_TODO_
+I spent roughly two days building it, partitioned in half a Sunday building the tools and connecting to the Indigo agent, then Monday creating the webpage and improving UX, outputs, standardizing information, translating everything to Spanish at presentation time, and making sure the agent's output was nice and gave a good UX sensation. Tuesday was spent linking up the tools as an MCP server to have both options available (REST and MCP), getting final touches ready and creating the video demo.
 
 ## Repository layout
 
