@@ -435,9 +435,10 @@ what justifies five focused tools instead of one fat endpoint.
 
 ### The prompt
 
-Four sections in the Agent Block: **General Description**, **Agent Goal**, **Company
-Description** and **Tone of Voice**. Written in English; the agent answers in the
-shopper's language.
+Six sections in the Agent Block: **General Description**, **Agent Goal**, **Company
+Description**, **Tone of Voice**, **General rules** and **Conversation Examples**.
+Instructions are written in English; the agent answers in the shopper's language, and
+the examples are in Spanish because they are what teaches the output format.
 
 **General Description** does three jobs. It frames the task — people arrive knowing
 they need a present and often very little else, and the job is turning that into
@@ -483,6 +484,64 @@ books.
 **Company Description** is the shop's own framing: gift-specialised, something for
 every taste and budget, and a relationship with the customer rather than a
 transaction.
+
+**General rules** is not prose but a list of discrete rule slots, and **the list is
+capped — ten rules, and the editor reports "0 rules left"**. That turns rules into a
+budget: anything added has to displace something, so a rule earns its slot by covering
+a failure that actually happened rather than one that might. The ten:
+
+1. Conversations happen in Spanish, but category, occasion, recipient and product
+   values go **to the tools** in English exactly as `get_categories` returned them —
+   that string is the source of truth and altering it breaks the call. Translate only
+   when speaking to the customer.
+2. Never invent a product, price, stock level, delivery time or policy; everything
+   factual comes from a tool response in this conversation.
+3. What we do not have, named explicitly: returns or refunds policy, delivery
+   guarantees, discount codes, opening hours, a physical shop. Say so plainly and
+   offer a handover. *"Never guess, never approximate, never say 'usually'."*
+4. A stated hard budget is hard. *"Under 70"*, *"max 70"* and *"no more than 70"* all
+   mean the same thing; if the only good option is above it, say the price and let the
+   customer decide rather than quietly widening the budget on their behalf.
+5. On a non-`ok` status, read `message`, `suggestions` and `notes` and act on them
+   before saying "we have nothing".
+6. When the catalogue genuinely has nothing suitable, say so — *"an accurate no is
+   worth more than a bad yes"* — with the €50 and €100 gift cards as an honest
+   fallback.
+7. Off-topic gets one line of decline and a stop. *"Do not improvise, do not lecture,
+   do not play along."*
+8. The English-values rule again, from the tool-calling side.
+9. **Call `search_products`, and if nothing comes back call `find_similar_products`,
+   before deciding a product does not exist.** Never conclude from a single
+   `no_match`; follow the `relax` suggestions in the response, and say no only after
+   the broadened search is also empty.
+10. **Always include a justification tied to the query, the recipient, or the item's
+    use — and when the thing being shown is not the thing asked for (yoga bands for
+    someone who asked for a yoga mat), explain why it is a good replacement.** Never
+    leave an empty recommendation reason.
+
+Rules 9 and 10 were both written in response to real failures, one per failure. Rule 9
+came from the agent reading eleven category names, finding no "Yoga" shelf among them,
+and telling a shopper the catalogue had nothing — while the service was returning a
+cork yoga mat for that exact query. The category list describes how the shop is
+organised, not what it contains. Rule 10 came from the opposite failure, described
+under *"the prompt is not the only place behaviour lives"* below: an unvetted
+alternative arriving with an instruction to justify it, and the agent obliging.
+
+**Conversation Examples** — five, in Spanish with real prices and availability. They
+are what teaches the block format the Tone of Voice section describes in words:
+
+```
+![Cuchillo Puntilla de 9cm](…/p/KD-002/image.svg)
+[Cuchillo Puntilla de 9cm](…/p/KD-002) - 69 €
+El cuchillo que más se acaba usando. 4,6 sobre 5 con 148 opiniones.
+Envío en 3 días · se envuelve para regalo
+```
+
+The second product in that example is the one worth studying, because it is the honest
+case: a sharpening stone offered alongside knives, introduced as *"no es un cuchillo
+pero acompaña bien los cuchillos de cocina y está en el rango de precio"*. It names
+what the product is not before saying why it still belongs — which is precisely the
+behaviour rule 10 generalises.
 
 ### How many questions before recommending, and why
 
@@ -549,6 +608,14 @@ person the same:
 **The importer inlines every `$ref`**, so schema reuse multiplies rather than saves —
 one schema referenced five times became twenty inlined copies and 72 KB. Collapsing
 the deep recovery-payload schemas halved it.
+
+**Behavioural rules are a capped resource, not a text box.** The Agent Block's General
+rules section takes discrete rules and stops at ten — the editor counts down and then
+reports "0 rules left". This is a better constraint than it first appears: it forces
+every rule to justify its slot against the others, so the list ends up describing
+failures that actually occurred rather than every precaution one can imagine. It also
+means late discoveries cannot simply be appended, which is an argument for pushing
+per-state guidance into the tool responses instead — see below.
 
 **Agents are invisible without a trigger.** Without one, messages fall through to the
 platform's toolless General Agent, which answers fluently and entirely from
