@@ -71,7 +71,7 @@ Run it locally:
 ```bash
 uv sync --dev
 cp .env.example .env                # then set CATALOG_API_TOKEN
-uv run pytest                       # 154 tests
+uv run pytest                       # 167 tests
 uv run uvicorn app.main:app --reload --port 8080
 ```
 
@@ -388,7 +388,7 @@ gate, one layer further in.
 ### Tests
 
 ```bash
-uv run pytest        # 154 tests
+uv run pytest        # 167 tests
 ```
 
 | File | Covers |
@@ -491,7 +491,7 @@ The decision to leave these out stems from the fact that the current state of th
 
 ## Time spent
 
-I spent roughly two days building it, partitioned in half a Sunday building the tools and connecting to the Indigo agent, then Monday creating the webpage and improving UX, outputs, standardizing information, translating everything to Spanish at presentation time, and making sure the agent's output was nice and gave a good UX sensation. Tuesday was spent linking up the tools as an MCP server to have both options available (REST and MCP), getting final touches ready and creating the video demo.
+I spent roughly two and a half days building it, partitioned in half a Sunday building the tools and connecting to the Indigo agent, then Monday creating the webpage and improving UX, outputs, standardizing information, translating everything to Spanish at presentation time, and making sure the agent's output was nice and gave a good UX sensation. Tuesday was spent linking up the tools as an MCP server to have both options available (REST and MCP), getting final touches ready and creating the video demo.
 
 ## Repository layout
 
@@ -512,6 +512,6 @@ app/
 data/                  the catalogue export
 web/index.html         the landing page (GitHub Pages), widget embedded
 scripts/               export_openapi.py — regenerates the committed spec
-tests/                 154 tests, including a fixture of deliberately broken CSV
+tests/                 167 tests, including a fixture of deliberately broken CSV
 openapi.json           generated snapshot; a test fails if it drifts from the service
 ```

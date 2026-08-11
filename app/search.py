@@ -33,6 +33,9 @@ RECOMMENDABLE = {"in_stock", "low", "unknown"}
 SEARCH_SORTS = ["relevance", "price_asc", "price_desc", "rating"]
 CATEGORY_SORTS = ["popularity", "price_asc", "price_desc", "rating"]
 
+# Similarity weights — see `_similarity`.
+SIM_SUBCATEGORY, SIM_CATEGORY, SIM_TAGS, SIM_PRICE = 2.0, 1.0, 3.0, 0.25
+
 
 # --- Projection ----------------------------------------------------------------
 
@@ -506,19 +509,39 @@ def products_by_category(
     }
 
 
+def _comparable(candidate: Product, target: Product) -> bool:
+    """Is this the same *kind* of thing, before we ask how close the price is?
+
+    A shared top-level category is not enough: Beauty & Wellness holds both a yoga
+    mat and a safety razor. Without this floor every product has ~90 'similar'
+    products and the tool can never honestly report that nothing compares.
+    """
+    if candidate.subcategory and candidate.subcategory == target.subcategory:
+        return True
+    return bool(set(candidate.tags) & set(target.tags))
+
+
 def _similarity(candidate: Product, target: Product) -> float:
+    """Rank the comparable set. Weights ordered by what each signal actually says.
+
+    Shared tags are the strongest signal of kind and also the sparsest — with four
+    tags a side, one overlap is a Jaccard of 0.14 — so they carry the largest
+    weight. Price is last and small: `max_price_eur` already enforces the budget,
+    and letting price drive the ranking too is what once ranked an 89 EUR razor
+    second to a 98 EUR yoga mat, on the strength of costing nine euros less.
+    """
     score = 0.0
     if candidate.subcategory and candidate.subcategory == target.subcategory:
-        score += 2.0
+        score += SIM_SUBCATEGORY
     if candidate.category == target.category:
-        score += 1.0
+        score += SIM_CATEGORY
 
     tags_a, tags_b = set(candidate.tags), set(target.tags)
     if tags_a or tags_b:
-        score += len(tags_a & tags_b) / len(tags_a | tags_b)
+        score += SIM_TAGS * len(tags_a & tags_b) / len(tags_a | tags_b)
 
     highest = max(candidate.price_eur, target.price_eur, 1.0)
-    score += 1.0 - abs(candidate.price_eur - target.price_eur) / highest
+    score += SIM_PRICE * (1.0 - abs(candidate.price_eur - target.price_eur) / highest)
     return score
 
 
@@ -554,6 +577,7 @@ def find_similar_products(
         for p in catalog.products
         if p.product_id != target.product_id
         and not (p.duplicate_group_id and p.duplicate_group_id == target.duplicate_group_id)
+        and _comparable(p, target)
     ]
     by_price = (
         candidates
@@ -587,17 +611,25 @@ def find_similar_products(
     ordered, _ = _dedupe(ranked)
     page = ordered[:limit]
 
+    notes = [
+        f"Ranked by similarity to {target.name} ({target.price_eur:g} EUR). "
+        f"For each one, explain the trade-off against {target.name}, or say plainly "
+        f"that it is a different kind of thing. Never invent a use case to make one fit."
+    ]
+    if len(ordered) == 1:
+        notes.append(
+            "This is the only comparable product in scope. Offering one honest option "
+            "beats padding the list with something that merely costs about the same."
+        )
+
     return {
         "status": "ok",
         "total_matches": len(ordered),
         "returned": len(page),
         "filters_applied": filters,
         "products": [to_summary(p, base_url=base_url) for p in page],
-        "has_more": False,
-        "notes": [
-            f"Ranked by similarity to {target.name} ({target.price_eur:g} EUR). "
-            f"Say what makes each one a comparable choice, not just that it is similar."
-        ],
+        "has_more": len(ordered) > limit,
+        "notes": notes,
     }
 
 

@@ -53,11 +53,31 @@ FALSY = {"no", "n", "false", "f", "0"}
 
 # Small stopword list for the search token bag. Deliberately tiny - over-stemming
 # hurts a 152-product catalogue more than it helps.
-STOPWORDS = {
+STOPWORDS_EN = {
     "a", "an", "and", "are", "as", "at", "be", "but", "by", "for", "from", "in",
     "is", "it", "its", "of", "on", "or", "that", "the", "then", "this", "to",
     "was", "which", "with", "you", "your",
 }
+
+# The shop answers in Spanish, so Spanish function words reach `query` and are
+# indexed from the translated name/description. They must be stripped on both
+# sides or they match each other: `de` survived tokenisation and collided with
+# the name token in "Eau de Parfum", and since a name hit is the ranker's
+# heaviest signal, every query containing `de` - "juegos de mesa", "algo de
+# cafe" - ranked a 145 EUR perfume first.
+#
+# Deliberately function words only. `te` is excluded: it is a pronoun, but it is
+# also what `té` folds to once accents are stripped, and the catalogue sells tea.
+STOPWORDS_ES = {
+    "al", "algo", "como", "con", "cual", "cuando", "de", "del", "donde", "el",
+    "ella", "ellos", "en", "era", "es", "esa", "ese", "eso", "esta", "este",
+    "esto", "hay", "la", "las", "le", "les", "lo", "los", "mas", "me", "mi",
+    "mis", "muy", "nos", "para", "pero", "por", "porque", "que", "se", "ser",
+    "si", "sin", "sobre", "son", "su", "sus", "tambien", "tiene", "tienen",
+    "un", "una", "unas", "uno", "unos", "ya", "yo",
+}
+
+STOPWORDS = STOPWORDS_EN | STOPWORDS_ES
 
 _CONTROL_CHARS = re.compile(r"[\x00-\x08\x0b\x0c\x0e-\x1f\x7f]")
 _HTML_TAG = re.compile(r"<[^>]+>")
@@ -232,7 +252,14 @@ def slugify(text: str) -> str:
 
 
 def tokenize(text: str) -> set[str]:
-    return {t for t in _TOKEN.findall(text.lower()) if t not in STOPWORDS and len(t) > 1}
+    """Fold accents before matching, so `acupresión` and `acupresion` are one token.
+
+    `_TOKEN` only recognises [a-z0-9], so without this an accented word is cut in
+    half at the accent - `acupresión` became `acupresi` plus a discarded `n`, and
+    matched neither itself nor its unaccented spelling. Shoppers type both.
+    """
+    folded = unicodedata.normalize("NFKD", text.lower()).encode("ascii", "ignore").decode()
+    return {t for t in _TOKEN.findall(folded) if t not in STOPWORDS and len(t) > 1}
 
 
 def stem(token: str) -> str:
@@ -682,7 +709,17 @@ def _group_duplicates(products: list[Product]) -> int:
 
 
 def _index_product(product: Product) -> None:
-    product.name_tokens = frozenset(tokenize(product.name))
+    """Build the search index. Runs after translations, so it indexes both languages.
+
+    The shop answers in Spanish but the export is English, and indexing only the
+    English fields made Spanish search a matter of luck: `chef` and `yoga` are
+    spelled the same in both, so those queries worked, while `cuchillo`, `vela`
+    and `taza` matched nothing at all. The Spanish name carries the same weight as
+    the English one - a shopper naming the product should rank the same either way.
+    """
+    product.name_tokens = frozenset(
+        tokenize(" ".join(filter(None, [product.name, product.name_es])))
+    )
     product.tag_tokens = frozenset(
         tokenize(" ".join(product.tags + ([product.subcategory] if product.subcategory else [])))
     )
@@ -694,6 +731,8 @@ def _index_product(product: Product) -> None:
                     [
                         product.name, product.category, product.subcategory, product.brand,
                         product.description, " ".join(product.tags), " ".join(product.occasions),
+                        product.name_es, product.description_es,
+                        product.color_es, product.material_es,
                     ],
                 )
             )

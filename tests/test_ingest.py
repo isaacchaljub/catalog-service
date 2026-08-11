@@ -14,11 +14,13 @@ import pytest
 from app.ingest import (
     MAX_DESCRIPTION_CHARS,
     MAX_PITCH_CHARS,
+    STOPWORDS,
     clean_text,
     load_catalog,
     parse_bool,
     parse_money,
     split_multi,
+    tokenize,
     translation_hash,
     truncate,
 )
@@ -302,3 +304,22 @@ def test_stale_translation_is_ignored(tmp_path):
 def test_missing_translations_file_is_fine(tmp_path):
     translated = load_catalog(FIXTURE, None, tmp_path / "does-not-exist.json")
     assert translated.get("NA-001").name_es is None
+
+
+def test_spanish_function_words_are_stripped():
+    """`de` is the one that mattered: it collided with the name "Eau de Parfum"."""
+    assert tokenize("cuchillo de chef") == {"cuchillo", "chef"}
+    assert tokenize("juegos de mesa") == {"juegos", "mesa"}
+    assert tokenize("algo para la cocina") == {"cocina"}
+
+
+def test_accents_fold_rather_than_splitting_the_word():
+    """Without folding, `_TOKEN` cut the word at the accent and dropped the rest."""
+    assert tokenize("acupresión") == tokenize("acupresion") == {"acupresion"}
+    assert tokenize("café") == {"cafe"}
+
+
+def test_tea_survives_the_spanish_stopwords():
+    """`té` folds to `te`, which is also a pronoun. The catalogue sells tea."""
+    assert "te" not in STOPWORDS
+    assert tokenize("té") == {"te"}

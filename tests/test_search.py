@@ -14,11 +14,18 @@ from app import search
 from app.ingest import load_catalog
 
 CSV = Path(__file__).resolve().parents[1] / "data" / "gift-shop-catalog.csv"
+TRANSLATIONS = Path(__file__).resolve().parents[1] / "data" / "translations_es.json"
 
 
 @pytest.fixture(scope="module")
 def catalog():
     return load_catalog(CSV, None)
+
+
+@pytest.fixture(scope="module")
+def catalog_es():
+    """The catalogue as the deployed service loads it - translations included."""
+    return load_catalog(CSV, None, TRANSLATIONS)
 
 
 # --- get_categories ------------------------------------------------------------
@@ -283,6 +290,75 @@ def test_similar_for_unknown_id_is_recoverable(catalog):
     result = search.find_similar_products(catalog, product_id="ZZ-999")
     assert result["status"] == "not_found"
     assert result["products"] == []
+
+
+def test_similar_will_not_offer_a_different_kind_of_thing(catalog):
+    """Sharing a top-level category and a price band is not being an alternative.
+
+    Beauty & Wellness holds the cork yoga mat (98 EUR), a safety razor (89) and a
+    bath towel set (86). Ranking on price proximity once put the razor second and
+    the towels third, and the agent duly invented a reason the towels suited yoga.
+    """
+    result = search.find_similar_products(catalog, product_id="BW-017", max_price_eur=90)
+    ids = {p["product_id"] for p in result["products"]}
+
+    assert "BW-007" not in ids          # Safety Razor Set, 89 EUR
+    assert "BW-015" not in ids          # Turkish Bath Towel Set, 86 EUR
+    assert ids == {"BW-018"}            # the one genuine fitness alternative in budget
+
+
+def test_similar_ranks_kind_above_price_proximity(catalog):
+    """The nearest-priced comparable must not automatically rank first."""
+    target = catalog.get("BW-017")
+    bands, razor = catalog.get("BW-018"), catalog.get("BW-007")
+
+    assert search._similarity(bands, target) > search._similarity(razor, target)
+
+
+def test_similar_says_when_there_is_only_one_honest_option(catalog):
+    result = search.find_similar_products(catalog, product_id="BW-017")
+    assert result["total_matches"] == 1
+    assert any("only comparable product" in note for note in result["notes"])
+
+
+def test_similar_reports_whether_more_were_held_back(catalog):
+    result = search.find_similar_products(catalog, product_id="KD-001", limit=2)
+    assert result["has_more"] is (result["total_matches"] > 2)
+
+
+# --- Spanish queries -----------------------------------------------------------
+# The shop answers in Spanish. Before the index carried both languages, a Spanish
+# query only worked when the word happened to be spelled the same in English:
+# `chef` and `yoga` matched, `cuchillo` and `vela` returned nothing.
+
+
+@pytest.mark.parametrize(
+    "query, expected_id",
+    [
+        ("una vela aromatica", "HL-003"),        # Ember Ceramic Candle
+        ("un collar", "JW-001"),                 # Gold Vermeil Chain Necklace
+        ("unos altavoces", "TG-025"),            # Bookshelf Speakers, Pair
+        ("cuchillo de chef", "KD-001"),          # Chef's Knife 20cm
+    ],
+)
+def test_spanish_queries_find_the_product(catalog_es, query, expected_id):
+    result = search.search_products(catalog_es, query=query)
+    assert result["status"] == "ok"
+    assert result["products"][0]["product_id"] == expected_id
+
+
+def test_spanish_stopword_no_longer_ranks_the_perfume(catalog_es):
+    """`de` matched the name token in "Eau de Parfum" at the ranker's top weight."""
+    for query in ("algo de cafe", "juegos de mesa", "cuchillo de chef"):
+        ids = {p["product_id"] for p in search.search_products(catalog_es, query=query)["products"]}
+        assert "BW-009" not in ids, f"perfume still leaking into {query!r}"
+
+
+def test_spanish_query_for_an_unavailable_product_is_honest(catalog_es):
+    result = search.search_products(catalog_es, query="esterilla de acupresion")
+    assert result["reason"] == "out_of_stock_only"
+    shown = result["suggestions"]["out_of_stock_matches"]
+    assert shown[0]["product_id"] == "BW-012"
 
 
 # --- response budget -----------------------------------------------------------
