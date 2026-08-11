@@ -527,7 +527,7 @@ organised, not what it contains. Rule 10 came from the opposite failure, describ
 under *"the prompt is not the only place behaviour lives"* below: an unvetted
 alternative arriving with an instruction to justify it, and the agent obliging.
 
-**Conversation Examples** — five, in Spanish with real prices and availability. They
+**Conversation Examples** — In Spanish with real prices and availability. They
 are what teaches the block format the Tone of Voice section describes in words:
 
 ```
