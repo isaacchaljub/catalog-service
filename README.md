@@ -1,7 +1,9 @@
 # Gift Shop Catalog Service
 
-A messy CSV export turned into five REST operations an AI agent can call, with an
-OpenAPI 3.0 specification the indigo.ai platform imports directly to create its tools.
+A messy CSV export turned into five operations an AI agent can call — over **REST**,
+with an OpenAPI 3.0 specification the indigo.ai platform imports directly, or over
+**MCP** at `/mcp`. Both are thin adapters over one implementation, so the transport is
+the client's choice rather than a fork in the code.
 
 **Live service** — `https://catalog-service-566410667338.europe-west1.run.app`
 **Specification** — [`/openapi.json`](https://catalog-service-566410667338.europe-west1.run.app/openapi.json) · browsable at [`/docs`](https://catalog-service-566410667338.europe-west1.run.app/docs)
@@ -54,8 +56,16 @@ Run it locally:
 ```bash
 uv sync --dev
 cp .env.example .env                # then set CATALOG_API_TOKEN
-uv run pytest                       # 113 tests
+uv run pytest                       # 154 tests
 uv run uvicorn app.main:app --reload --port 8080
+```
+
+The same five operations over MCP:
+
+```bash
+curl -s -X POST "$BASE/mcp" -H "Authorization: Bearer $TOKEN" \
+     -H "Content-Type: application/json" \
+     -d '{"jsonrpc":"2.0","id":1,"method":"tools/list"}'
 ```
 
 ### Architecture
@@ -66,7 +76,9 @@ data/gift-shop-catalog.csv   152 rows, one export, assumed hostile
    ├─ app/ingest.py          validating pipeline: coerce, quarantine, report
    │                         → in-memory Catalog (no database)
    ├─ app/search.py          pure functions: filter, rank, similar, budget
-   ├─ app/main.py            FastAPI · 5 tool endpoints (bearer auth) · /p/ product page (public)
+   │                         ↑ the single implementation both transports call
+   ├─ app/main.py            FastAPI · 5 REST endpoints (bearer auth) · /p/ page (public)
+   ├─ app/mcp_server.py      the same 5 operations as MCP tools, mounted at /mcp
    ├─ app/product_page.py    renders the /p/ page from the same get_product_details data
    ├─ app/placeholder_image.py  generates the /p/.../image.svg placeholder art
    └─ app/openapi_compat.py  post-processes the spec into genuine OpenAPI 3.0
@@ -178,6 +190,13 @@ reliable than hoping it composes a clever search.
 `anyone` is excluded from the recipient bonus deliberately: 90 of 152 products carry
 it, so rewarding that match would be noise wearing a signal's clothes.
 
+**Queries match across word endings.** An agent picks whichever surface form the
+shopper's phrasing suggests, and exact token matching made that a coin flip: `baking`
+found the Bread Baking Set, `bake` returned `no_match` and the assistant apologised
+for a €72 product we stock. A small suffix stemmer folds the everyday variants. Its
+rules were chosen by measuring rather than guessing — over the real 1,299-token
+vocabulary, every group it merges is a genuine word family, and a test asserts that.
+
 **Category is a query parameter, not a path segment.** `Home & Living` contains an
 ampersand, and path-encoding it in a URL assembled by a model is a footgun for no
 benefit.
@@ -280,12 +299,48 @@ at least 24 characters. Generate one with:
 python3 -c "import secrets; print(secrets.token_urlsafe(32))"
 ```
 
-**`/openapi.json`, `/docs` and `/health` are deliberately unauthenticated.** A
-platform must be able to read the specification before it has anywhere to put a
-credential.
+**`/openapi.json`, `/docs`, `/health` and the `/p/` pages are deliberately
+unauthenticated.** A platform must be able to read the specification before it has
+anywhere to put a credential, and `/p/` is loaded by a shopper's browser.
 
 Out of scope, and stated as such: rotation, per-client keys, request signing, rate
 limiting.
+
+### The MCP transport
+
+The same five operations, exposed as MCP tools at `/mcp` on the same service. Each
+tool is a thin adapter — take arguments, call `app/search.py`, return its dict — so
+ranking, filtering and response shaping have exactly one implementation, and the tool
+descriptions are copied verbatim from the REST operations rather than reworded, since
+they are tuned prompt surface.
+
+Three things were not obvious:
+
+**A mounted sub-app bypasses the router's auth.** The REST tools are protected by
+`APIRouter(dependencies=[Depends(verify_bearer)])`. FastAPI hands a `Mount` the raw
+ASGI triple and never resolves dependencies, so a plain `app.mount("/mcp", …)` would
+have left the whole catalogue readable without a token while REST stayed locked —
+with nothing visibly broken. `BearerAuthASGIMiddleware` closes it, scoped to the
+mounted app so the public `/p/` pages stay public. Verified by mutation: removing the
+middleware fails exactly the two auth tests and nothing else.
+
+**`stateless_http=True`, because Cloud Run has no session affinity.** MCP is
+session-oriented by default — it was designed for a long-lived stdio connection to a
+local subprocess, with server-initiated messages and subscriptions. Here `initialize`
+could create a session on one instance and the next call land on another, and
+scale-to-zero can discard the instance between conversation turns. None of the
+stateful features are used by five read-only tools, so the session goes.
+
+**The transport is stricter about `Accept` than real clients are.** streamable-HTTP
+answers 406 to anything that is not exactly `application/json, text/event-stream` —
+including `*/*` and a missing header. Every request reaching this app is an MCP call,
+so the requirement is supplied for the client rather than demanded of it.
+
+Mounted at `/` rather than `/mcp`, because FastMCP's own route already sits at `/mcp`
+and nesting a second prefix answers a bare `POST /mcp` with a 307 to `/mcp/`, which
+not every client follows. The cost is that an unmatched path reaches the MCP app and
+is judged by its middleware first — 401 without a token, a normal 404 with one. A test
+pins that, so moving the mount is a decision rather than an accident.
 
 ### Deployment
 
@@ -318,14 +373,15 @@ gate, one layer further in.
 ### Tests
 
 ```bash
-uv run pytest        # 113 tests
+uv run pytest        # 154 tests
 ```
 
 | File | Covers |
 |---|---|
 | `test_ingest.py` | The hostile fixture: quarantine reasons, coercion, caps, ragged rows, encoding |
-| `test_search.py` | The six brief scenarios at the tool layer: budget too low, out of stock, nothing suitable, fuzzy category, deduplication, limits |
+| `test_search.py` | The six brief scenarios at the tool layer: budget too low, out of stock, nothing suitable, fuzzy category, deduplication, limits, stemming |
 | `test_endpoints.py` | Auth, the public spec, **OpenAPI validity**, and spec quality — every operation has a description, every parameter is described, no response contains `null` |
+| `test_mcp.py` | The MCP surface: auth on the mounted app, flat tool schemas, and **every tool byte-identical to its REST twin** |
 
 The specification is validated with `openapi-spec-validator` in the test suite rather
 than by eye. That is a direct consequence of a mistake — see below.
@@ -376,6 +432,35 @@ platform's toolless General Agent, which answers fluently and entirely from
 imagination — in our case inventing fourteen categories and eighty subcategories that
 do not exist. That failure mode looks like success, which makes it the dangerous one.
 
+**Secrets do not interpolate when an MCP server connects.** The header
+`Authorization: [[CATALOG_API_TOKEN]]` arrived at the service as that literal string —
+no substitution, no token. The same secret works perfectly for the REST tools, and the
+reason is *when* each transport needs it. REST gets its tool list from the uploaded
+specification, which needs no credential to read; the token is used only when the
+agent invokes a tool, inside a conversation, where an environment is bound and the
+placeholder resolves. MCP has no specification: the only way to populate the tool list
+is to connect and call `tools/list`, which happens at configuration time with no
+conversation and nothing to resolve against. **MCP's runtime discovery — its main
+advantage over OpenAPI — is exactly what breaks, because it needs authentication
+before an execution context exists.** Fix: put the literal value in the header field.
+
+**The chat widget renders markdown as CommonMark, including setext headings.** A `---`
+divider between two products, written on the line directly after a paragraph, is not a
+horizontal rule — it is a heading underline. It silently promoted the entire first
+product to an `<h2>` (every line bold and oversized) and was consumed, so no rule ever
+appeared. The missing divider and the giant bold text were one bug. Use `***`, which
+is a thematic break in every position, or no divider at all.
+
+**Three false negatives cost more than the bugs did.** "Repeat this verbatim" tests
+kept passing because they omit the divider and the second product — the last product
+in a message is the one position that never breaks. Copying a reply out of the chat or
+the Details panel strips the newlines the bug depends on; a doubled product name in a
+paste is the tell that you are reading rendered HTML rather than markdown. And a
+platform reporting "Not Connected" covers at least four distinct failures. In all three
+cases the answer came from instrumenting this side — Cloud Run request logs, and one
+`WARNING` that logs the *shape* of a rejected credential (scheme, length, never the
+token) — not from reasoning about the symptom.
+
 **And a mistake of my own**, since it is the most instructive thing here: the
 post-processing stripped `title` from every object in the document to satisfy the
 model runtime — including `info.title`, which OpenAPI requires. The result was an
@@ -409,16 +494,21 @@ _TODO_
 
 ```
 app/
-  config.py          environment, fails fast on a missing token
-  ingest.py          the validating pipeline
-  models.py          Pydantic response models, every field described
-  search.py          filtering, ranking, similarity, response budget
-  errors.py          recoverable-response builders
-  auth.py            bearer dependency
-  openapi_compat.py  OpenAPI 3.0 conformance and tool-runtime compatibility
-  main.py            five routes, thin
-data/                the catalogue export
-scripts/             export_openapi.py — regenerates the committed spec
-tests/               113 tests, including a fixture of deliberately broken CSV
-openapi.json         generated snapshot; a test fails if it drifts from the service
+  config.py            environment, fails fast on a missing token
+  ingest.py            the validating pipeline, tokenising and stemming
+  models.py            Pydantic response models, every field described
+  search.py            filtering, ranking, similarity, response budget
+  errors.py            recoverable-response builders
+  auth.py              bearer dependency, and the ASGI guard for the MCP mount
+  openapi_compat.py    OpenAPI 3.0 conformance and tool-runtime compatibility
+  mcp_server.py        the five operations as MCP tools
+  product_page.py      the public /p/ page, chat widget embedded
+  placeholder_image.py generated per-product SVG behind image_url
+  vocab_es.py          fixed colour/material glossary for the Spanish page
+  main.py              five routes plus the MCP mount, thin
+data/                  the catalogue export
+web/index.html         the landing page (GitHub Pages), widget embedded
+scripts/               export_openapi.py — regenerates the committed spec
+tests/                 154 tests, including a fixture of deliberately broken CSV
+openapi.json           generated snapshot; a test fails if it drifts from the service
 ```
