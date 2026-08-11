@@ -435,47 +435,67 @@ what justifies five focused tools instead of one fat endpoint.
 
 ### The prompt
 
-Four sections in the Agent Block. Instructions are in English; **the conversation
-examples are in Spanish**, because the examples are what actually teach the output
-format and the model keys off them.
+Four sections in the Agent Block: **General Description**, **Agent Goal**, **Company
+Description** and **Tone of Voice**. Written in English; the agent answers in the
+shopper's language.
 
-**Tone of Voice** sets the register and the column width — *"a good shop assistant,
-not a brochure"*, short sentences, at most one emoji per conversation. It bans
-headings, tables and nested bullets outright, because the widget is a narrow column
-usually on a phone. It also carries two rules that exist only because the widget
-misbehaved without them: each product is one block with no blank lines inside it and
-a `---` between products (a blank line alone renders as no separation), and product
-names are spoken in the shopper's language every time — *"cuchillo puntilla de 9cm"*,
-not `Paring Knife 9cm` — with the single exception of names that are themselves
-English titles, such as books.
+**General Description** does three jobs. It frames the task — people arrive knowing
+they need a present and often very little else, and the job is turning that into
+specific products they would be glad to give. It then gives the tool routing
+explicitly, because the model will otherwise guess: call `get_categories` **once** at
+the start, since it returns the exact category, occasion and recipient strings this
+catalogue uses and *"guessing those values returns nothing"*; after that
+`search_products` is the workhorse, reached for *"the moment the customer gives you
+any constraint at all"*; `get_product_details` for a named item, and
+`find_similar_products` when something is over budget or out of stock.
 
-**Brand Rules** is the honesty section. Never invent a product, price, stock level,
-delivery time or policy; everything factual must come from a tool response *in this
-conversation*. It names what we do not have — returns policy, delivery guarantees,
-discount codes, opening hours, a physical shop — so the model declines from a list
-rather than improvising. A hard budget is hard: *"under 70"* never quietly becomes 82.
-When a tool returns a non-`ok` status, read `message`, `suggestions` and `notes` and
-act on them before saying "we have nothing". And **never claim the catalogue lacks
-something without having called `search_products` for it** — that rule was added after
-the agent answered a yoga question by reasoning over the eleven category names,
-concluded there was no yoga shelf, and told a shopper we had nothing, while the
-service was returning a cork yoga mat for that exact query. The category list
-describes how the shop is organised, not what it contains.
+The third job is honesty. Everything factual about a product comes from the tools
+*"and nowhere else"*, and the shop's returns policy, delivery guarantees, discounts
+and opening hours are named as things the agent does not know and never guesses at.
+When a tool returns nothing, read the `message`, `suggestions` and `notes` it sends
+back and act on them.
 
-**Conversation Examples** carry the six scenarios from the brief in Spanish, with real
-prices and availability. Examples are the lever for anything the model will not do
-unprompted: it defaulted to offering a plain link to a product page until an example
-showed `![name](url)`, after which it embedded images reliably.
+It closes with the rule the brief is really testing:
 
-**Company Description** is the shop's own framing, kept short.
+> You are not a search engine. A list of product names is a search result. A
+> recommendation says why this particular thing suits this particular person. Always
+> tie a recommendation with something the person said in the chat.
+
+**Agent Goal** is where the question budget lives, along with the definition of
+success and failure — success is a customer with a specific product in mind who
+understands why it suits, *or* an honest "the catalogue has nothing for that"; failure
+is handing over a list they have to work through themselves, asking more questions
+than needed, or saying anything about a product that did not come from a tool. It also
+ends every turn with a next step rather than an open list. The budget itself and its
+reasoning are below.
+
+**Tone of Voice** sets register and column width — *"a good shop assistant, not a
+brochure"*, short sentences, at most one emoji per conversation, and no headings,
+tables or nested bullets, because the widget is a narrow column usually on a phone.
+It carries the layout rule the widget needs (each product is one block — image, then
+name with link and price on one line, then description, then shipping — with no blank
+lines inside the block), bans internal labels from customer-facing text (`KD-018`,
+`stock_level`, `Pitch:` are for tool calls), and requires product names to be spoken
+in the shopper's language every time — *"cuchillo puntilla de 9cm"*, not `Paring Knife
+9cm` — with the single exception of names that are themselves English titles, such as
+books.
+
+**Company Description** is the shop's own framing: gift-specialised, something for
+every taste and budget, and a relationship with the customer rather than a
+transaction.
 
 ### How many questions before recommending, and why
 
 **At most two before the first recommendation, and none at all if the shopper has
-already given a constraint.** "A chef's knife under a hundred euros" gets knives, not
-a questionnaire. "I need a gift" gets one question that does the most work — who it is
-for and what the occasion is, in a single sentence — then recommendations, then
+already given you something to work with — a budget, an occasion, who it is for, or a
+description of the thing itself.** "A chef's knife under a hundred euros" gets knives,
+not a questionnaire. "I need a gift" gets one question that does the most work — who
+it is for and what the occasion is, in a single sentence — then recommendations, then
 refinement.
+
+That fourth trigger matters more than it looks. *"Quiero algo para hacer yoga"* names
+no budget, no recipient and no occasion, but it describes the thing, so it earns a
+recommendation immediately rather than a question.
 
 The reasoning is asymmetric cost. Refining after a recommendation is cheap: the
 shopper has something concrete to react to, and "cheaper" or "she is not really a
@@ -494,9 +514,10 @@ and to lead with the trade-off when the honest answer is a spread rather than a 
 
 Designed against the platform's own Card Block limits (title 55 characters,
 description 85) so it fits a narrow column whether rendered as text or as cards: two
-products per message, three only when comparing; name and price, one line of why tied
-to what the shopper said, one line of logistics; under about 80 words; no tables, no
-nested bullets; exactly one next step.
+products per message, three only when comparing; each product a single block of image,
+then name-with-link and price on one line, then the why tied to what the shopper said,
+then the shipping line; under about 80 words; no tables, no nested bullets; exactly
+one next step.
 
 **Two products, not one.** With a single product there is nothing the choice is
 *against*, and the "why" line degrades into a product blurb — a sentence that would be
