@@ -18,10 +18,12 @@ from typing import Annotated, Any, Literal
 from fastapi import APIRouter, Depends, FastAPI, Path, Query, Request
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import HTMLResponse, JSONResponse, Response
+from fastmcp.utilities.lifespan import combine_lifespans
 
 from app import auth, placeholder_image, product_page, search
 from app.config import APP_NAME, APP_VERSION, Settings, require_api_token
 from app.ingest import Catalog, load_catalog
+from app.mcp_server import build_mcp_app
 from app.openapi_compat import (
     downgrade_to_openapi_30,
     remove_validation_error_responses,
@@ -47,6 +49,10 @@ def get_catalog() -> Catalog:
     return _catalog
 
 
+def get_settings() -> Settings:
+    return _settings
+
+
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     global _catalog, _settings
@@ -56,6 +62,11 @@ async def lifespan(app: FastAPI):
     app.servers = [{"url": _settings.public_base_url, "description": "Catalog Service"}]
     app.openapi_schema = None          # drop any document cached before servers was set
     yield
+
+
+# Built before the FastAPI app so its lifespan (which starts the MCP session
+# manager) can be combined with the app's own lifespan below.
+mcp_app = build_mcp_app(get_catalog, get_settings)
 
 
 SERVICE_DESCRIPTION = """
@@ -76,7 +87,7 @@ app = FastAPI(
     title="Gift Shop Catalog Service",
     version=APP_VERSION,
     description=SERVICE_DESCRIPTION,
-    lifespan=lifespan,
+    lifespan=combine_lifespans(lifespan, mcp_app.lifespan),
     docs_url="/docs",
     openapi_url="/openapi.json",
 )
@@ -536,3 +547,11 @@ async def find_similar_products(
 
 
 app.include_router(tools)
+
+# Mounted at "/" rather than "/mcp": FastMCP's own route already lives at "/mcp"
+# (set in app/mcp_server.py), and nesting a second "/mcp" prefix here would only
+# answer a bare POST /mcp with a 307 to "/mcp/" - a redirect indigo.ai's docs
+# describe as unnecessary and that not every MCP client follows. Must stay last:
+# Starlette matches routes in registration order, and this mount matches any path
+# not already claimed above.
+app.mount("/", mcp_app)

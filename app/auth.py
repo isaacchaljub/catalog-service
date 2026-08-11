@@ -15,6 +15,9 @@ import secrets as pysecrets
 
 from fastapi import Depends, HTTPException, status
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
+from starlette.datastructures import Headers
+from starlette.responses import JSONResponse
+from starlette.types import ASGIApp, Receive, Scope, Send
 
 bearer_scheme = HTTPBearer(
     auto_error=False,
@@ -24,11 +27,19 @@ bearer_scheme = HTTPBearer(
 
 _expected_token: str = ""
 
+UNAUTHORIZED_DETAIL = "Missing or invalid bearer token. Send 'Authorization: Bearer <token>'."
+
 
 def configure(token: str) -> None:
     """Called once at startup, after the token has been validated."""
     global _expected_token
     _expected_token = token
+
+
+def _token_is_valid(token: str) -> bool:
+    # Constant-time: a normal == exits at the first wrong character, which leaks the
+    # token to anyone who can measure response times.
+    return bool(token) and pysecrets.compare_digest(token, _expected_token)
 
 
 async def verify_bearer(
@@ -42,13 +53,39 @@ async def verify_bearer(
     """
     unauthorized = HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
-        detail="Missing or invalid bearer token. Send 'Authorization: Bearer <token>'.",
+        detail=UNAUTHORIZED_DETAIL,
         headers={"WWW-Authenticate": "Bearer"},
     )
 
     if credentials is None or credentials.scheme.lower() != "bearer":
         raise unauthorized
-    # Constant-time: a normal == exits at the first wrong character, which leaks the
-    # token to anyone who can measure response times.
-    if not pysecrets.compare_digest(credentials.credentials, _expected_token):
+    if not _token_is_valid(credentials.credentials):
         raise unauthorized
+
+
+class BearerAuthASGIMiddleware:
+    """Guards ASGI apps mounted with `app.mount(...)`, which `tools`'s router-level
+    `Depends(verify_bearer)` never sees - FastAPI dispatches straight to a mounted
+    sub-app's own ASGI callable, bypassing the router (and its dependencies)
+    entirely. The MCP transport is mounted, not routed, so it needs this instead.
+    """
+
+    def __init__(self, app: ASGIApp) -> None:
+        self._app = app
+
+    async def __call__(self, scope: Scope, receive: Receive, send: Send) -> None:
+        if scope["type"] != "http":
+            await self._app(scope, receive, send)
+            return
+
+        scheme, _, token = Headers(scope=scope).get("authorization", "").partition(" ")
+        if scheme.lower() != "bearer" or not _token_is_valid(token):
+            response = JSONResponse(
+                {"detail": UNAUTHORIZED_DETAIL},
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                headers={"WWW-Authenticate": "Bearer"},
+            )
+            await response(scope, receive, send)
+            return
+
+        await self._app(scope, receive, send)
