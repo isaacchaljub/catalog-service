@@ -11,6 +11,7 @@ signing, rate limiting.
 
 from __future__ import annotations
 
+import logging
 import secrets as pysecrets
 
 from fastapi import Depends, HTTPException, status
@@ -18,6 +19,8 @@ from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from starlette.datastructures import Headers
 from starlette.responses import JSONResponse
 from starlette.types import ASGIApp, Receive, Scope, Send
+
+log = logging.getLogger(__name__)
 
 bearer_scheme = HTTPBearer(
     auto_error=False,
@@ -78,8 +81,22 @@ class BearerAuthASGIMiddleware:
             await self._app(scope, receive, send)
             return
 
-        scheme, _, token = Headers(scope=scope).get("authorization", "").partition(" ")
+        header = Headers(scope=scope).get("authorization", "").strip()
+        scheme, _, token = header.partition(" ")
+        # Tolerate whitespace a console paste can leave behind. The token itself is
+        # opaque and never contains spaces, so stripping cannot make a wrong token right.
+        token = token.strip()
         if scheme.lower() != "bearer" or not _token_is_valid(token):
+            # Shape only, never the token. A 401 from a remote MCP client is otherwise
+            # indistinguishable from a routing problem, and the platform reports both
+            # as a bare "Not Connected".
+            log.warning(
+                "MCP auth rejected: scheme=%r token_len=%d expected_len=%d header_present=%s",
+                scheme,
+                len(token),
+                len(_expected_token),
+                bool(header),
+            )
             response = JSONResponse(
                 {"detail": UNAUTHORIZED_DETAIL},
                 status_code=status.HTTP_401_UNAUTHORIZED,

@@ -18,7 +18,9 @@ from typing import Annotated, Any, Literal
 from fastmcp import FastMCP
 from fastmcp.server.http import StarletteWithLifespan
 from pydantic import Field
+from starlette.datastructures import Headers
 from starlette.middleware import Middleware
+from starlette.types import ASGIApp, Receive, Scope, Send
 
 from app import auth, search
 from app.config import Settings
@@ -277,6 +279,35 @@ def build_mcp_server(
     return mcp
 
 
+class AcceptStreamableHTTPMiddleware:
+    """Supply the `Accept` pair the streamable-HTTP transport insists on.
+
+    The transport requires `application/json` *and* `text/event-stream` together and
+    answers 406 to anything else - including `*/*` and a missing header. That is
+    stricter than most HTTP clients default to, and a 406 surfaces in a platform UI
+    as an unexplained connection failure. Every request reaching this app is an MCP
+    call, so widening what we accept costs nothing and removes a whole class of
+    client-compatibility failure.
+    """
+
+    _REQUIRED = "application/json, text/event-stream"
+
+    def __init__(self, app: ASGIApp) -> None:
+        self._app = app
+
+    async def __call__(self, scope: Scope, receive: Receive, send: Send) -> None:
+        if scope["type"] == "http":
+            accept = Headers(scope=scope).get("accept", "")
+            if not ("application/json" in accept and "text/event-stream" in accept):
+                scope = dict(scope)
+                scope["headers"] = [
+                    (key, value)
+                    for key, value in scope["headers"]
+                    if key.lower() != b"accept"
+                ] + [(b"accept", self._REQUIRED.encode())]
+        await self._app(scope, receive, send)
+
+
 def build_mcp_app(
     get_catalog: Callable[[], Catalog],
     get_settings: Callable[[], Settings],
@@ -288,7 +319,12 @@ def build_mcp_app(
         # affinity, so a stateful MCP session (assumed pinned to one instance)
         # would break across requests.
         stateless_http=True,
+        # Order matters: auth runs first so an unauthenticated caller is rejected
+        # before anything else inspects the request.
         # `tools`'s router-level `Depends(verify_bearer)` in app/main.py cannot see
         # this app once it is mounted - see BearerAuthASGIMiddleware.
-        middleware=[Middleware(auth.BearerAuthASGIMiddleware)],
+        middleware=[
+            Middleware(auth.BearerAuthASGIMiddleware),
+            Middleware(AcceptStreamableHTTPMiddleware),
+        ],
     )

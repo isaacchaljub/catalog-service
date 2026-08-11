@@ -76,6 +76,33 @@ def test_correct_token_is_accepted(client):
     assert _rpc(client, "tools/list").status_code == 200
 
 
+@pytest.mark.parametrize(
+    "accept",
+    ["application/json, text/event-stream", "application/json", "text/event-stream", "*/*", None],
+)
+def test_accepts_any_accept_header(client, accept):
+    """streamable-http answers 406 to anything but the exact json+event-stream pair.
+
+    That is stricter than most clients default to, and the platform reports a 406 as
+    an unexplained "Not Connected". Every request here is an MCP call, so the
+    transport's requirement is supplied for the client.
+    """
+    headers = {**AUTH, "Content-Type": "application/json"}
+    if accept is not None:
+        headers["Accept"] = accept
+    assert _rpc(client, "tools/list", headers=headers).status_code == 200
+
+
+def test_token_tolerates_whitespace_from_a_paste(client):
+    """A secret pasted into a web form can pick up a trailing space or newline.
+
+    The token is opaque and space-free, so stripping cannot make a wrong token valid -
+    which the wrong-token test above continues to prove.
+    """
+    headers = {**MCP_HEADERS, "Authorization": f"Bearer {TOKEN} "}
+    assert _rpc(client, "tools/list", headers=headers).status_code == 200
+
+
 def test_public_pages_stay_open_despite_the_root_mount(client):
     """The bearer guard must not leak onto the pages a shopper's browser loads.
 
