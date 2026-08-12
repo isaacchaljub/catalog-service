@@ -9,9 +9,6 @@ the client's choice rather than a fork in the code.
 **Specification** — [`/openapi.json`](https://catalog-service-566410667338.europe-west1.run.app/openapi.json) · browsable at [`/docs`](https://catalog-service-566410667338.europe-west1.run.app/docs)
 **Agent test page** — `https://clair.platform.indigo.ai/chatbot/5f1a19fb-2334-4907-b3a6-f87b6f58d205`
 
-> <!-- TODO(Isaac): fill in once the video is recorded -->
-> **Video walkthrough** — _link to follow_
-
 ---
 
 ## Part 1 — How I work with AI
@@ -40,7 +37,7 @@ Once the build completes I use Claude once more to stress-test the product to fi
 
 ### When it went wrong
 
-The most recent example was at Duckbill, with one of the hardest projects I tackled: Personal Information Extraction from unstructured chats. A profile extraction pipeline I built had Opus doing the extraction and Sonnet verifying it, so no human in the loop here. The changes I made were supposed to drop the slop rate, and the evals numbers said they did, but I kept manually running into bad records that had passed verification. That mismatch is what told me something was off, and when I checked the drift between the evals result and what I was seeing in Prod I notices that Sonnet wasn't actually catching Opus's mistakes, it was just missing the same things, since they're close enough in training and lab to share blind spots.
+The most recent example was at Duckbill, with one of the hardest projects I tackled: Personal Information Extraction from unstructured chats. A profile extraction pipeline I built had Opus doing the extraction and Sonnet verifying it, so no human in the loop here. The changes I made were supposed to drop the slop rate, and the evals numbers said they did, but I kept manually running into bad records that had passed verification. That mismatch is what told me something was off, and when I checked the drift between the evals result and what I was seeing in Prod I noticed that Sonnet wasn't actually catching Opus's mistakes, it was just missing the same things, since they're close enough in training and lab to share blind spots.
 
 What I do differently now: verification needs to come from an actually independent model, not just a different size of the same one, so I moved that step to GPT-5.5. And more broadly, I stopped assuming a decision was fine just because it seemed to be running and working. I check any decision point I didn't personally make, so I know where the pipeline can actually break instead of hoping it doesn't. I get the AI Agent to give me a list of decision points it took to evaluate possible drift points.
 
